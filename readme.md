@@ -39,3 +39,5 @@ http://geo.holoviews.org/Working_with_Bokeh.html
 ```bash
 (venv) > python app.py 
 ```
+- Bokeh: http://localhost:5000/bokeh
+- HighMaps: https://localhost:5000/highmaps
