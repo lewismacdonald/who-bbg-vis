@@ -58,7 +58,7 @@ $.getJSON('/static/refined.json', function (data) {
             name: 'Mean systolic blood pressure',
             states: {
                 hover: {
-                    color: '#ff6666'
+                    color: '#a4edba'
                 }
             }
         }]
