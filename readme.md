@@ -41,3 +41,12 @@ http://geo.holoviews.org/Working_with_Bokeh.html
 ```
 - Bokeh: http://localhost:5000/bokeh
 - HighMaps: https://localhost:5000/highmaps
+
+## On aws
+```bash
+pip install awsebcli
+
+passphrse etc 
+when setting up
+eb init --no-verify-ssl (assume you have proxies set as env vars)
+
