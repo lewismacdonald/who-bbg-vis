@@ -11,7 +11,6 @@ import logging, sys
 
 from flask import Flask, render_template
 
-
 app = Flask(__name__)
 
 logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
