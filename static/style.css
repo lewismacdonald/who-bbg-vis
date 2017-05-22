@@ -17,6 +17,9 @@
     max-height: 300px;
 }
 
+#map-mode-btns{
+    float: right;
+}
 
 .highcharts-tooltip>span {
     padding: 10px;
