@@ -1,6 +1,4 @@
 import utils
-import pandas as pd
-import numpy as np
 import json
 
 class BloodPressureParse():
@@ -63,8 +61,7 @@ class CellularParse():
         return 'Mobile-cellular telephone subscriptions'
 
     def _preproc(self):
-        self.raw = pd.read_excel(self.raw,header=[0,1])
-        self.data = self.raw.loc[:,'Mobile-cellular telephone subscriptions per 100 inhabitants'].to_dict()
+        self.data = json.loads(open(self.raw,'r').read())
         return self
 
     def get(self,ts=None):
@@ -77,6 +74,6 @@ class CellularParse():
             'name':c[0]
             } 
             for c in self.data[ts].items()
-            if c[1] and np.isfinite(c[1])
+            if c[1]
         ]
         return output
