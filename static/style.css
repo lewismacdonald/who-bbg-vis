@@ -1,14 +1,22 @@
-#container {
-    height: 500px; 
-    width: 800px; 
+#map {
+    height: 600px; 
     margin: 0 auto; 
+    float: left;
 }
 
-#bubbles {
-    height: 500px; 
-    width: 800px; 
+#timeseries {
+    width: 100%; 
     margin: 0 auto; 
+    float: left;
 }
+
+#scatter {
+    width: 100%; 
+    margin: 0 auto; 
+    float: left;
+    max-height: 300px;
+}
+
 
 .highcharts-tooltip>span {
     padding: 10px;
