@@ -39,13 +39,12 @@ class BloodPressureParse():
         self.data=output
         return self
     
-    def get(self, ts=None, sex='Female'):
-        if ts is None:
-            ts = max(self.data.keys())
-        output = [
-            c for c in self.data[ts]
-            if c['sex']==sex
-        ]
+    def get(self):
+        output = []
+        for ts in self.data.keys():
+            for c in self.data[ts]:
+                c['date'] = ts
+                output.append(c)
         return output
 
 class CellularParse():
@@ -64,16 +63,16 @@ class CellularParse():
         self.data = json.loads(open(self.raw,'r').read())
         return self
 
-    def get(self,ts=None):
-        if ts is None:
-            ts = max(self.data.keys())
-        output = [
-            {
-            'code':self.cmap.get_code(c[0]), 
-            'value':c[1],
-            'name':c[0]
-            } 
-            for c in self.data[ts].items()
-            if c[1]
-        ]
+    def get(self):
+        for ts in self.data.keys():
+            output = [
+                {
+                'code':self.cmap.get_code(c[0]), 
+                'value':c[1],
+                'name':c[0],
+                'date':ts
+                } 
+                for c in self.data[ts].items()
+                if c[1]
+            ]
         return output
