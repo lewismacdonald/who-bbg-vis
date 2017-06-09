@@ -1,25 +1,9 @@
-$.getJSON('/api/v1/data/3/map', function (map_data) {
-$.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
-    // Add lower case codes to the data set for inclusion in the tooltip.pointFormat
-    $.each(map_data.data, function () {
-        this.flag = this.code.replace('UK', 'GB').toLowerCase();
-    });
-
-    // Initiate the Map
-    mapChart = Highcharts.mapChart('map', {
-
-        title: {
-            text: map_data.fact.title
-        },
-        subtitle: {
-            text: map_data.fact.source
-        },
+var mapChartOptions = {
         chart: {
             map: 'custom/world'
         },
         legend: {
             title: {
-                text: map_data.fact.ylabel,
                 style: {
                     color: (Highcharts.theme && Highcharts.theme.textColor) || 'black'
                 }
@@ -54,50 +38,14 @@ $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
             type: 'linear'
         },
 
-        series: [{
-            data: map_data.data,
-            mapData: Highcharts.maps['custom/world'],
-            joinBy: ['iso-a2', 'code'],
-            name: 'Mean systolic blood pressure',
-            allowPointSelect: true,
-            states: {
-                hover: {
-                    color: '#a4edba'
-                },
-                 select: {
-                    color: '#a4edba',
-                    borderColor: 'black',
-                    dashStyle: 'shortdot'
-                }
-            }
-        }]
-    });
+        series: [{}]
+};
 
-    // Initiate the scatter
-    scatterChart = Highcharts.chart('scatter', {
+var scatterChartOptions = {
         chart: {
             type: 'scatter',
             zoomType: 'xy',
-            height: 300,
             spacingLeft: 0
-        },
-        title: {
-            text: scatter_data.fact.title
-        },
-        xAxis: {
-            title: {
-                enabled: true,
-                text: scatter_data.fact.xlabel
-            },
-            startOnTick: true,
-            endOnTick: true,
-            showLastLabel: true
-        },
-        yAxis: {
-            title: {
-                text: scatter_data.fact.ylabel
-            },
-            opposite: true
         },
         legend: {
             layout: 'vertical',
@@ -146,15 +94,59 @@ $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
                 }
             }
         },
-        series: [{
+        series: [{}]
+    };
+
+function drawCharts(map_data, scatter_data, series_data) {
+    var scatterChart = new Highcharts.chart('scatter', scatterChartOptions);
+    scatterChart.series[0].update({
             name: '2015',
             allowPointSelect: true,
             color: 'rgba(223, 83, 83, .5)',
             data: scatter_data.data
-        }]
+        })
+    scatterChart.update({title: {
+            text: scatter_data.fact.title
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: scatter_data.fact.xlabel
+            },
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                text: scatter_data.fact.ylabel
+            },
+            opposite: true
+        }
     });
+    var mapChart = new Highcharts.mapChart('map', mapChartOptions);
 
-    timeSeriesChart = Highcharts.chart('timeseries', {
+    mapChart.setTitle({text: map_data.fact.title});
+    mapChart.series[0].update({
+            data: map_data.data,
+            mapData: Highcharts.maps['custom/world'],
+            joinBy: ['iso-a2', 'code'],
+            name: 'Mean systolic blood pressure',
+            allowPointSelect: true,
+            states: {
+                hover: {
+                    color: '#a4edba'
+                },
+                 select: {
+                    color: '#a4edba',
+                    borderColor: 'black',
+                    dashStyle: 'shortdot'
+                }
+            }
+        });
+    mapChart.legend.update({text: map_data.fact.ylabel});
+
+    var timeSeriesChart = new Highcharts.chart('timeseries', {
         title: {
             text: 'Blood Pressure over Time'
         },
@@ -188,19 +180,16 @@ $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
                     enabled: false
                 },
                 threshold: 0,
-                pointStart: 1,
+                pointStart: series_data.fact.start,
             }
         },
         series: [{
-            name: 'default',
-            data: [1,2,3,4,5,6],
+            name: series_data.fact.title,
+            data: series_data.data,
             type: 'area',
         }]
     });
-
-    // Work out hover sync
-
-    // OnClick
+    console.log(series_data);
     Highcharts.wrap(Highcharts.Point.prototype, 'select', function (proceed) {
         // careful about recursion here -- dont select anything!
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
@@ -229,27 +218,32 @@ $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
                 console.log('not found in scatter');
             };
             
-            $.each(points, function(i) {
-                if (timeSeriesChart.series[i]) {
+            $.each(points, function(i, point) {
+                var source_id = $('#source1').val().toString();
+                var ts_endpoint = '/api/v1/data/'+source_id+'/ts/'+point.code;
+                console.log('Fetching: ' + ts_endpoint);
+                $.getJSON(ts_endpoint, function(series_data) {
+                    if (timeSeriesChart.series[i]) {
                         console.log('update 0-th series');
                         timeSeriesChart.series[i].update({
-                            name: this.name,
-                            data: [1,2,3,4,5,6,7],
+                            name: point.name,
+                            data: series_data.data,
                             type: points.length > 1 ? 'line' : 'area'
                         });
                     } else {
                         console.log('adding new series');
                         timeSeriesChart.addSeries({
-                            name: this.name,
-                            data: [7,6,5,4,3,2,1],
+                            name: point.name,
+                            data: series_data.data,
                             type: points.length > 1 ? 'line' : 'area'
                         }, false);
                     }
+                    while (timeSeriesChart.series.length > points.length) {
+                        timeSeriesChart.series[timeSeriesChart.series.length - 1].remove(false);
+                    }
+                    timeSeriesChart.redraw();
+                });
                 
-                while (timeSeriesChart.series.length > points.length) {
-                    timeSeriesChart.series[timeSeriesChart.series.length - 1].remove(false);
-                }
-                timeSeriesChart.redraw();
             });
 
         } else if (this.series['type'] =='scatter') {
@@ -260,5 +254,45 @@ $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
             console.log('Timeseries was clicked');
         };
     });
+};
+
+// -- ON INITIAL LOAD-- //
+$.getJSON('/api/v1/data/3/map', function(map_data) {
+    $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
+        $.getJSON('/api/v1/data/3/ts/US', function(series_data) {
+            $.each(map_data.data, function () {
+                this.flag = this.code.replace('UK', 'GB').toLowerCase();
+            });
+        drawCharts(map_data, scatter_data, series_data);
+        });
+    });
 });
+// Populate list boxes
+$.getJSON('/api/v1/data', function(source_list) {
+    $.each(source_list, function(i, source){
+         $('#source1').append($("<option />").val(source.id).text(source.name));
+         $('#source2').append($("<option />").val(source.id).text(source.name));
+    });
+    //defaults
+    $('#source1').val(3);
+    $('#source2').val(1);
 });
+
+// List box change
+$('#source1').change(function() {
+    var primary = $('#source1').val();
+    var secondary = $('#source2').val();
+    console.log('Primary Source now: '+ primary );
+    
+    $.getJSON('/api/v1/data/3/map', function(map_data) {
+        $.getJSON('api/v1/data/3/scatter/1', function(scatter_data) {
+            $.getJSON('/api/v1/data/3/ts/US', function(series_data) {
+                $.each(map_data.data, function () {
+                    this.flag = this.code.replace('UK', 'GB').toLowerCase();
+                });
+            drawCharts(map_data, scatter_data, series_data);
+            });
+        });
+    });
+});
+
