@@ -27,12 +27,10 @@ API OUTLINE
 /api/v1/data/{id}/ts/{code} = [{y: <value>, t: <time/date value>}]
 """
 from flask import Flask, render_template, jsonify
-from flask_cors import CORS
 import json
 from sources import get_source, Loader, list_sources
 import utils
 application = Flask(__name__)
-CORS(application)
 
 @application.route('/')
 def highmaps_vis():
