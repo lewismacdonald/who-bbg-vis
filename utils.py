@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-from fuzzywuzzy import process
+#from fuzzywuzzy import process
 
 def join(xs, ys, key='key', value='value', fields=[]):
     """ Join two lists of dicts """

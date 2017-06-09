@@ -26,16 +26,47 @@ API OUTLINE
 /api/v1/data/{id}/scatter/{id2} - [{x, y, code, country}]
 /api/v1/data/{id}/ts/{code} = [{y: <value>, t: <time/date value>}]
 """
-from flask import Flask, render_template, jsonify
-import json
+
+from flask import Flask, render_template, jsonify, request, redirect
+import json, os
 from sources import get_source, Loader, list_sources
 import utils
+from werkzeug.utils import secure_filename
+from custom_parsers import UploaderParse
+
+ALLOWED_EXTENSIONS = set(['xlsx', 'txt', 'xls', 'csv'])
 application = Flask(__name__)
 
-@application.route('/')
+application.config['UPLOAD_FOLDER'] = 'C:/who-bbg-vis/parsed-who-data/' # CHANGEME, and make me relative...
+
+def allowed_file(filename):
+	return '.' in filename and \
+			filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@application.route('/', methods=['GET', 'POST'])
 def highmaps_vis():
-    """ Render a template with highmaps """
-    return render_template("index.html")
+	""" Render a template with highmaps """
+	if request.method == 'POST':
+		# check if the post request has the file part
+		if 'file' not in request.files:
+			print 'no file'
+			return redirect(request.url)
+		file = request.files['file']
+		# if user does not select file, browser also
+		# submit a empty part without filename
+		if file.filename == '':
+			print 'no name'
+			return redirect(request.url)
+		if file and allowed_file(file.filename):
+			print 'saving'
+			filename = secure_filename(file.filename)
+			file = UploaderParse(file).get()
+			filename = filename.split('.')[0]+'.json'
+			with open(os.path.join(application.config['UPLOAD_FOLDER'], filename), 'w') as out:
+				out.write(json.dumps(file))
+			return redirect(request.url)
+	else:
+		return render_template("index.html")
 
 
 @application.route('/api/v1/data/<int:dataid>/map')
@@ -72,6 +103,7 @@ def get_time_series(dataid, code):
 @application.route('/api/v1/data')
 def get_source_list():
     return json.dumps(list_sources())
+
 # run the app.
 if __name__ == "__main__":
     # Setting debug to True enables debug output. This line should be
