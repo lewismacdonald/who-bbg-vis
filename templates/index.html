@@ -29,23 +29,39 @@
 		<nav class="navbar navbar-default">
   			<div class="container">
     			<div class="navbar-header">
-      				<a class="navbar-brand" href="#">WHO-BBG Visualisation</a>
+      				<a class="navbar-brand" href="#">WHO-BBG Vis</a>
     			</div>
     			<ul class="nav navbar-nav">
-      				<li class="active"><a href="#">Home</a></li>
+      				<li class="active"><a href="#">#</a></li>
     			</ul>
     			<form class="navbar-form navbar-left">
-      				<label for="sel1">Primary Source:</label>
+      				<label for="sel1">Primary:</label>
 					<select class="form-control" id="source1">
 					</select>
-					<label for="sel1">Secondary Source:</label>
+					<label for="sel1">Secondary:</label>
 					<select class="form-control" id="source2">
 					</select>
     			</form>
+                <form class="navbar-form" id="uploadbanner" enctype="multipart/form-data" method="post" action="/upload">
+                    <input class="form-control" id="fileupload" name="file" type="file" />
+                    <input class="form-control" type="submit" value="Submit" id="submit" />
+                </form>
   			</div>
 		</nav>
 		<div class="container">
 			<div class= "row">
+                {% if error %}
+                <div class="panel-body bg-danger"
+                    <p><strong>Error:</strong> {{ error }}</p>
+                </div>
+                {% endif %}
+
+                {% if success %}
+                <div class="panel-body bg-success">
+                    <p><strong>Success:</strong> {{ success }}</p>
+                </div>
+                {% endif %}
+
 				<div class="panel panel-default col-md-6">
 					<div class="panel-body" id="map"></div>
 				</div>
@@ -58,12 +74,6 @@
 					<div class="panel-body" id="timeseries"></div>
 				</div>
 			</div>
-		</div>
-		<div>
-			<form id="uploadbanner" enctype="multipart/form-data" method="post" action="/">
-				<input id="fileupload" name="file" type="file" />
-				<input type="submit" value="submit" id="submit" />
-			</form>
 		</div>
 	</div>
 	<footer class="footer-default">

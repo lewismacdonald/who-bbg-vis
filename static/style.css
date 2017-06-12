@@ -1,5 +1,4 @@
 #map {
-    height: 300px; 
     width: 100%;
     margin: 0 auto; 
     float: left;
@@ -15,7 +14,6 @@
     width: 100%; 
     margin: 0 auto; 
     float: left;
-    height: 300px;
 }
 
 #map-mode-btns{

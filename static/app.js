@@ -214,7 +214,6 @@ function drawCharts(map_data, scatter_data, series_data) {
             text: series_data.fact.title
         },
         chart: {
-            height: 300,
             spacingLeft: 0
         },
         credits: {

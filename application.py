@@ -41,33 +41,13 @@ application = Flask(__name__)
 application.config['UPLOAD_FOLDER'] = 'C:/who-bbg-vis/parsed-who-data/' # CHANGEME, and make me relative...
 
 def allowed_file(filename):
-	return '.' in filename and \
-			filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @application.route('/', methods=['GET', 'POST'])
 def highmaps_vis():
-	""" Render a template with highmaps """
-	if request.method == 'POST':
-		# check if the post request has the file part
-		if 'file' not in request.files:
-			print 'no file'
-			return redirect(request.url)
-		file = request.files['file']
-		# if user does not select file, browser also
-		# submit a empty part without filename
-		if file.filename == '':
-			print 'no name'
-			return redirect(request.url)
-		if file and allowed_file(file.filename):
-			print 'saving'
-			filename = secure_filename(file.filename)
-			file = UploaderParse(file).get()
-			filename = filename.split('.')[0]+'.json'
-			with open(os.path.join(application.config['UPLOAD_FOLDER'], filename), 'w') as out:
-				out.write(json.dumps(file))
-			return redirect(request.url)
-	else:
-		return render_template("index.html", title='WHO-BBG Data Visualisation')
+    """ Render a template with highmaps """
+    return render_template("index.html", title='WHO-BBG Data Visualisation')
 
 
 @application.route('/api/v1/data/<int:dataid>/map')
@@ -115,6 +95,31 @@ def get_time_series(dataid, code):
 @application.route('/api/v1/data')
 def get_source_list():
     return json.dumps(list_sources())
+
+@application.route('/upload', methods=['POST'])
+def upload_file():
+    try:
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return render_template("index.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: No file specified!')
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            return render_template("index.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: File has No Name!')
+        if file and allowed_file(file.filename):
+            print 'saving'
+            filename = secure_filename(file.filename)
+            file = UploaderParse(file).get()
+            filename = filename.split('.')[0]+'.json'
+            with open(os.path.join(application.config['UPLOAD_FOLDER'], filename), 'w') as out:
+                out.write(json.dumps(file))
+            return render_template("index.html", title='WHO-BBG Data Visualisation', success='Source added Successfully')
+        else:
+            return render_template("index.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File Extension')
+    except:
+        return render_template("index.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File')
+
 
 # run the app.
 if __name__ == "__main__":
