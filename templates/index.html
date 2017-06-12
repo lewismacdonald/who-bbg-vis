@@ -17,13 +17,17 @@
 
 	<!-- Custom -->
 	<link rel="stylesheet" href="/static/style.css">
+
+	<!-- Icon -->
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 
 <body>
+	<title>{{title}}</title>
 	<!-- Page Bootsrap Container-->
-	<div class="container">
+	<div class="container-fluid">
 		<nav class="navbar navbar-default">
-  			<div class="container-fluid">
+  			<div class="container">
     			<div class="navbar-header">
       				<a class="navbar-brand" href="#">WHO-BBG Visualisation</a>
     			</div>
@@ -40,20 +44,20 @@
     			</form>
   			</div>
 		</nav>
-		<div class= "row">
-			<div class="col-md-6">
-				<div id="map"></div>
+		<div class="container">
+			<div class= "row">
+				<div class="panel panel-default col-md-6">
+					<div class="panel-body" id="map"></div>
+				</div>
+				<div class="panel panel-default col-md-6">
+					<div class="panel-body" id="scatter"></div>
+				</div>
 			</div>
-			<div class="col-md-6">
-				<div id="scatter"></div>
+			<div class="row">
+				<div class="panel panel-default col-md-12">
+					<div class="panel-body" id="timeseries"></div>
+				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div class="col-md-12">
-				<div id="timeseries"></div>
-			</div>
-			
-
 		</div>
 		<div>
 			<form id="uploadbanner" enctype="multipart/form-data" method="post" action="/">
@@ -62,11 +66,8 @@
 			</form>
 		</div>
 	</div>
+	<footer class="footer-default">
+        <script src="/static/app.js"></script>
+    </footer>
 </body>
-
-<footer>
-	<!-- JavaScript App Implementation -->
-	<script src="/static/app.js"></script>
-</footer>
-
 </html>

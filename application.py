@@ -27,7 +27,7 @@ API OUTLINE
 /api/v1/data/{id}/ts/{code} = [{y: <value>, t: <time/date value>}]
 """
 
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json, os
 from sources import get_source, Loader, list_sources
 import utils
@@ -35,6 +35,7 @@ from werkzeug.utils import secure_filename
 from custom_parsers import UploaderParse
 
 ALLOWED_EXTENSIONS = set(['xlsx', 'txt', 'xls', 'csv'])
+
 application = Flask(__name__)
 
 application.config['UPLOAD_FOLDER'] = 'C:/who-bbg-vis/parsed-who-data/' # CHANGEME, and make me relative...
@@ -66,15 +67,20 @@ def highmaps_vis():
 				out.write(json.dumps(file))
 			return redirect(request.url)
 	else:
-		return render_template("index.html")
+		return render_template("index.html", title='WHO-BBG Data Visualisation')
 
 
 @application.route('/api/v1/data/<int:dataid>/map')
 def get_map_data(dataid):
     source = get_source(dataid)
     f = Loader(source)
-    fact={'ylabel':source.name,'title':source.name, 'source':'WHO', 'date': f.most_recent_date}
-    return json.dumps({'data':f.get(),'fact':fact})
+    fact = {
+        'ylabel':source.name,
+        'title':source.name, 
+        'source':'WHO', 
+        'date': f.most_recent_date
+        }
+    return json.dumps({'data': f.get(), 'fact': fact})
 
 @application.route('/api/v1/data/<int:primaryid>/scatter/<int:secondaryid>')
 def get_scatter_data(primaryid, secondaryid):
@@ -84,20 +90,26 @@ def get_scatter_data(primaryid, secondaryid):
     secondary = Loader(secondary_source)
     # join on the code
     output = utils.join(primary.get(), secondary.get(), key='code', fields=['name'])
-    fact = {'xlabel':primary_source.name, 
-            'ylabel': secondary_source.name,
-            'title':'{} v.s. {}'.format(primary_source.name, secondary_source.name),
-            'date':primary.most_recent_date
-            }
-    return json.dumps({'data':output,'fact':fact})
+    fact = {
+        'xlabel':primary_source.name, 
+        'ylabel': secondary_source.name,
+        'title':'{} v.s. {}'.format(primary_source.name, secondary_source.name),
+        'date':primary.most_recent_date
+        }
+    return json.dumps({'data': output, 'fact': fact})
 
 @application.route('/api/v1/data/<int:dataid>/ts/<code>')
 def get_time_series(dataid, code):
     source = get_source(dataid)
     f = Loader(source)
-    fact={'ylabel':source.name,'title':source.name, 'source':'WHO','start':min(f.unique_values('date'))}
+    fact = {
+        'ylabel':source.name,
+        'title':source.name + ' over Time', 
+        'source':'WHO',
+        'start':min(f.unique_values('date'))
+        }
     ts = f.time_series(code=code)
-    resp = jsonify({'data':ts,'fact':fact})
+    resp = jsonify({'data': ts, 'fact': fact})
     return resp
 
 @application.route('/api/v1/data')
