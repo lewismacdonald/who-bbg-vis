@@ -248,7 +248,7 @@ function drawCharts(map_data, scatter_data, series_data) {
         series: [{
             name: series_data.fact.title,
             data: series_data.data,
-            type: 'area',
+            type: 'line',
         }]
     });
     Highcharts.wrap(Highcharts.Point.prototype, 'select', function (proceed) {
@@ -295,14 +295,14 @@ function drawCharts(map_data, scatter_data, series_data) {
                             timeSeriesChart.series[i].update({
                                 name: point.name,
                                 data: series_data.data,
-                                type: points.length > 1 ? 'line' : 'area'
+                                type: points.length > 1 ? 'line' : 'line'
                             });
                         } else {
                             console.log('adding new time series');
                             timeSeriesChart.addSeries({
                                 name: point.name,
                                 data: series_data.data,
-                                type: points.length > 1 ? 'line' : 'area'
+                                type: points.length > 1 ? 'line' : 'line'
                             }, false);
                         }
                         while (timeSeriesChart.series.length > points.length) {
