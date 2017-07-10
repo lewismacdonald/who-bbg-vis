@@ -49,6 +49,10 @@ def highmaps_vis():
     """ Render a template with highmaps """
     return render_template("index.html", title='WHO-BBG Data Visualisation')
 
+@application.route('/sources',methods=['GET'])
+def source_screen():
+    return render_template('sources.html',  title='WHO-BBG Data Visualisation')
+
 
 @application.route('/api/v1/data/<int:dataid>/map')
 def get_map_data(dataid):
