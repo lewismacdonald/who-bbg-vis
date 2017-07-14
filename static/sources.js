@@ -1,10 +1,10 @@
 $(document).ready(function() {
-    $.getJSON('/api/v1/data', function(data) {
+    $.getJSON('/api/v1/sources', function(data) {
         var table_data = []
         console.log(data);
         $.each(data, function(i, row) {
             console.log(i, row);
-            table_data.push([row['id'],row['name'],row['name'],row['name'],row['name'],row['name']])
+            table_data.push([row['name'],row['title'],row['source-url'],row['data-file'],row['long-title'],row['description']])
         });
         console.log(table_data);
         $('#source-table').DataTable( {
@@ -19,5 +19,13 @@ $(document).ready(function() {
                 ]
             })
     });
-    
-} );
+
+    // Populate list boxes
+    $.getJSON('/api/v1/sources', function(source_list) {
+        $.each(source_list, function(i, source){
+             $('#source1').append($("<option />").val(source.name).text(source.title));
+             $('#source2').append($("<option />").val(source.name).text(source.title));
+        });
+    });   
+});
+

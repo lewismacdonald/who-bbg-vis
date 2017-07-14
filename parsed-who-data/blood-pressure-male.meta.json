@@ -1,0 +1,9 @@
+{   
+"name":"blood-pressure-male",
+"source-name":"",
+"source-url":"http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*",
+"data-file":"blood-pressure-male.json",
+"title":"Blood Pressure Estimate, Male",
+"long-title":"WHO Blood Pressure Estimates, Male",
+"description":"WHO Blood Pressure Estimates, Male, from the WHO data source"    
+}

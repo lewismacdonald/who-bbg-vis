@@ -29,7 +29,7 @@ API OUTLINE
 
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json, os
-from sources import get_source, Loader, list_sources
+from sources import get_source, Loader, list_sources, list_local_sources
 import utils
 from werkzeug.utils import secure_filename
 from custom_parsers import UploaderParse
@@ -99,6 +99,10 @@ def get_time_series(dataid, code):
 @application.route('/api/v1/data')
 def get_source_list():
     return json.dumps(list_sources())
+
+@application.route('/api/v1/sources')
+def get_local_sources():
+    return json.dumps(list_local_sources())
 
 @application.route('/upload', methods=['POST'])
 def upload_file():

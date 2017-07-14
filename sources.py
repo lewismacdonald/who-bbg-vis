@@ -9,11 +9,15 @@ from collections import namedtuple
 from io import BytesIO
 from custom_parsers import BloodPressureParse, CellularParse
 import json
+import os
+
 
 # We need some inventory of sources
 Source = namedtuple('Source','id, name, url, local, parsed, type, panel, parser')
 sources=[
-Source(1,'itu-mobile','http://www.itu.int/en/ITU-D/Statistics/Documents/statistics/2016/Mobile_cellular_2000-2015.xls','who-data/cellular-normalised.json','parsed-who-data/itu-mobile.json','json',True, CellularParse),
+Source(1,'itu-mobile',
+	'http://www.itu.int/en/ITU-D/Statistics/Documents/statistics/2016/Mobile_cellular_2000-2015.xls',
+	'who-data/cellular-normalised.json','parsed-who-data/itu-mobile.json','json',True, CellularParse),
 #Source(4,'itu-mobile','http://www.itu.int/en/ITU-D/Statistics/Documents/statistics/2016/Mobile_cellular_2000-2015.xls','who-data/Mobile_cellular_2000-2015_trimmed.xls','excel',True, CellularParse),
 #Source(2,'itu-cellular-normalised','who-data/cellular_normalised','who-data/cellular_normalised.json','json',True, None),
 Source(4, 'blood-pressure-male','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure-male.json','json',True, BloodPressureParse),
@@ -21,6 +25,25 @@ Source(5, 'blood-pressure-female','http://apps.who.int/gho/athena/data/GHO/BP_06
 Source(3, 'blood-pressure-both','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure.json','json',True, BloodPressureParse)
 ]
 
+LocalSource=namedtuple('Source','name, title, parsed')
+
+DATA_DIRECTORY='parsed-who-data'
+
+
+
+def list_local_sources():
+	files= [os.path.join(DATA_DIRECTORY,data_file) for data_file in os.listdir(DATA_DIRECTORY) if '.meta' in data_file]
+	print(files)
+	source_list = [json.loads(open(f,'r').read()) for f in files]
+	return source_list
+
+def get_local_source(name):
+	try:
+		source = next(s for s in list_local_sources() if s['name']==name)
+	except:
+		raise IOError("Source {} not found".format(name))
+
+	return LocalSource(source['name'],source['title'],os.path.join(DATA_DIRECTORY, source['data-file']))
 
 class Loader():
 	def __init__(self, source):
