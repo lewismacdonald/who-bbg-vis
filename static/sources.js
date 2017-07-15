@@ -16,7 +16,8 @@ $(document).ready(function() {
                 {title:"Raw"},
                 {title:"Attributes"},
                 {title:"Description"}
-                ]
+                ],
+            responsive: true,
             })
     });
 
@@ -26,6 +27,7 @@ $(document).ready(function() {
              $('#source1').append($("<option />").val(source.name).text(source.title));
              $('#source2').append($("<option />").val(source.name).text(source.title));
         });
-    });   
+    });
+    //$('#uploadsource').formValidation();
 });
 

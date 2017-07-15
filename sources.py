@@ -25,7 +25,7 @@ Source(5, 'blood-pressure-female','http://apps.who.int/gho/athena/data/GHO/BP_06
 Source(3, 'blood-pressure-both','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure.json','json',True, BloodPressureParse)
 ]
 
-LocalSource=namedtuple('Source','name, title, parsed')
+LocalSource=namedtuple('Source','name, title, parsed, source_name, source_url')
 
 DATA_DIRECTORY='parsed-who-data'
 
@@ -43,7 +43,12 @@ def get_local_source(name):
 	except:
 		raise IOError("Source {} not found".format(name))
 
-	return LocalSource(source['name'],source['title'],os.path.join(DATA_DIRECTORY, source['data-file']))
+	return LocalSource(
+			source['name'],
+			source['title'],
+			os.path.join(DATA_DIRECTORY, source['data-file']),
+			source['source-name'],
+			source['source-url'])
 
 class Loader():
 	def __init__(self, source):

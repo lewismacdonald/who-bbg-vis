@@ -12,6 +12,7 @@
 	<script src="https://code.highcharts.com/maps/modules/data.js"></script>
 	<script src="//code.highcharts.com/maps/modules/map.js"></script>
 	<script src="https://code.highcharts.com/mapdata/custom/world.js"></script>
+	
 	<!-- Flag sprites service provided by Martijn Lafeber, https://github.com/lafeber/world-flags-sprite/blob/master/LICENSE -->
 	<link rel="stylesheet" type="text/css" href="https://cloud.github.com/downloads/lafeber/world-flags-sprite/flags32.css" />
 
@@ -75,18 +76,9 @@
                 </form>
             </li>
           </ul>
-          <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
-              <label>Upload</label>
-              <form  id="uploadbanner" enctype="multipart/form-data" method="post" action="/upload">
-                <input class="form-control" id="fileupload" name="file" type="file" />
-                <input class="form-control" type="submit" value="Submit" id="submit" />
-              </form>
-            </li>
-          </ul>
         </nav>
-
-        <div class="container col-md-10 col-md-offset-2">
+        <div id="loader"></div>
+        <div id="dashboard" class="container col-md-10 col-md-offset-2">
           <h1>Dashboard</h1>
           <div class= "row">
                 {% if error %}

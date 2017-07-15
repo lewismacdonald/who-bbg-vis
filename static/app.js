@@ -128,6 +128,9 @@ function drawCharts(map_data, scatter_data, series_data) {
         title: {
             text: scatter_data.fact.title
         },
+        subtitle: {
+            text: 'Source: '+'<a  href="'+scatter_data.fact.credit_url + '">' + scatter_data.fact.source +'</a>'
+        },
         xAxis: {
             title: {
                 enabled: true,
@@ -152,13 +155,15 @@ function drawCharts(map_data, scatter_data, series_data) {
 
     mapChart = Highcharts.mapChart('map', mapChartOptions);
     
+    // set title ad subtitle
     mapChart.setTitle({
         text: map_data.fact.title,
-        floating: true,
-        padding: 0,
-        margin: 0,
         align: 'center'
+    },
+    {
+        text: 'Source: '+'<a  href="'+map_data.fact.credit_url + '">' + map_data.fact.source +'</a>'
     });
+    mapChart.setSubtitle()
     
     if (mapChart.series[0]) {
         // series already exists
@@ -213,14 +218,14 @@ function drawCharts(map_data, scatter_data, series_data) {
         title: {
             text: series_data.fact.title
         },
+        subtitle: {
+            text: 'Source: '+'<a  href="'+series_data.fact.credit_url + '">' + series_data.fact.source +'</a>'
+        },
         chart: {
             spacingLeft: 0
         },
         credits: {
             enabled: false
-        },
-        subtitle: {
-            text: null
         },
         xAxis: {
             tickPixelInterval: 50,
@@ -345,61 +350,19 @@ function drawCharts(map_data, scatter_data, series_data) {
                 console.log('Timeseries was clicked');
             };
         } else if (trigger.trigger=='chartsync') {
-            console.log('TRIGGERED BY CODE - IGNORE')
+            console.log('TRIGGERED BY APP')
+
+        } else {
+
+            console.log('Pigs can fly!') // this can never happen!
         }
-        // need to understand which element is selected
         
     });
 };
-/*
-function syncSelect(e) {
-    console.log(e); // func args (select)
-    console.log(this); // actual point selected
-    console.log(arguments);
-    
-    var thisChart = this.series.chart;
-
-    Highcharts.each(Highcharts.charts, function (chart) {
-        if (chart != thisChart) {
-            console.log(chart);
-        }
-    });
-    
-    if (e.trigger != 'syncSelect')  { //prevent feedback loop
-
-        var thisChart = this.series.chart;
-        var points = thisChart.getSelectedPoints(); // excludes current
-        var thisType = this.series['type'];
-        var currentPoint = e.target;
-
-        console.log(points.length.toString() + ' points selected:', points);
-        Highcharts.each(Highcharts.charts, function (chart) {
-            if (chart != thisChart) {
-                // to update
-                var index = chart.series[0].data.findIndex(x => x.code==currentPoint.code);
-                if (index != -1) {
-                    if (points.length > 1) {
-                        // accumulate
-                        //chart.series[0].data[index].select(true, true, { trigger: 'syncSelect' });
-                    } else {
-                        chart.series[0].data[index].select(true, false, { trigger: 'syncSelect' });
-                    };
-                    //chart.series[0].data[index].graphic.toFront();
-                } else {
-                    console.log('not found:', currentPoint.code);
-                };
-            } else {
-                console.log('Source:', chart);
-            }
-            
-        });
-    }
-   
-}
-*/
 
 
 function getDataAndDraw(primary_id, secondary_id) {
+    
     $.getJSON('/api/v1/data/'+primary_id+'/map', function(map_data) {
         $.getJSON('api/v1/data/'+primary_id+'/scatter/'+secondary_id, function(scatter_data) {
             $.getJSON('/api/v1/data/'+primary_id+'/ts/US', function(series_data) {
@@ -410,26 +373,34 @@ function getDataAndDraw(primary_id, secondary_id) {
             });
         });
     });
+    
 };
-///initial -- some DEFAULTS
-var DEFAULT_PRIMARY = 3;
-var DEFAULT_SECONDARY = 1;
 
-// -- ON INITIAL LOAD-- //
-getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY);
 
-// Populate list boxes
-$.getJSON('/api/v1/data', function(source_list) {
-    $.each(source_list, function(i, source){
-         $('#source1').append($("<option />").val(source.id).text(source.name));
-         $('#source2').append($("<option />").val(source.id).text(source.name));
+// ON LOAD
+$(document).ready(function() {
+    ///initial -- some DEFAULTS
+    var DEFAULT_PRIMARY = "blood-pressure-male";
+    var DEFAULT_SECONDARY = "itu-mobile";
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("loader").style.display = "block";
+    // -- ON INITIAL LOAD-- //
+    getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY);
+
+    $.getJSON('/api/v1/sources', function(source_list) {
+        $.each(source_list, function(i, source){
+             $('#source1').append($("<option />").val(source.name).text(source.title));
+             $('#source2').append($("<option />").val(source.name).text(source.title));
+        });
+         $('#source1').val(DEFAULT_PRIMARY);
+         $('#source2').val(DEFAULT_SECONDARY);
     });
-    //defaults
-    $('#source1').val(DEFAULT_PRIMARY);
-    $('#source2').val(DEFAULT_SECONDARY);
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
 });
 
-// List box change
+
+// Source List box change
 $('#source1, #source2').change(function() {
     var primary = $('#source1').val();
     var secondary = $('#source2').val();
