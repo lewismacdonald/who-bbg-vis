@@ -1,9 +1,0 @@
-{   
-"name":"blood-pressure-female",
-"source-name":"WHO Data",
-"source-url":"http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*",
-"data-file":"blood-pressure-female.json",
-"title":"Blood Pressure Estimate, Femle",
-"long-title":"WHO Blood Pressure Estimates, Female",
-"description":"WHO Blood Pressure Estimates, Female, from the WHO data source"    
-}
