@@ -1,18 +1,22 @@
 branch-defaults:
   master:
-    environment: who-poc
+    environment: prod
     group_suffix: null
+environment-defaults:
+  prod:
+    branch: null
+    repository: null
 global:
   application_name: who-bbg-vis
   branch: null
-  default_ec2_keyname: aws-eb
+  default_ec2_keyname: lmac
   default_platform: Python 2.7
   default_region: eu-west-2
   instance_profile: null
   no-verify-ssl: true
   platform_name: null
   platform_version: null
-  profile: eb-cli
+  profile: lewis
   repository: null
   sc: git
   workspace_type: Application
