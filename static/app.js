@@ -386,6 +386,8 @@ $(document).ready(function() {
     document.getElementById("loader").style.display = "block";
     // -- ON INITIAL LOAD-- //
 
+
+
     $.getJSON('/api/v1/sources', function(source_list) {
         $.each(source_list, function(i, source){
              $('#source1').append($("<option>",{

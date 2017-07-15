@@ -50,16 +50,16 @@
         <ul class="nav navbar-nav navbar-right">
             <li>
               <select class="selectpicker form-control navbar-btn" id="source_picker" 
-              multiple title="Update Display Sources..." data-selected-text-format="static">
-                <optgroup label="Primary source" data-max-options="1" id="source1">
+              multiple title="Select Display Sources..." data-selected-text-format="static">
+                <optgroup label="Primary Source (Map)" data-max-options="1" id="source1">
                 </optgroup>
-                <optgroup label="Secondary source" data-max-options="1" id="source2">
+                <optgroup label="Secondary Source" data-max-options="1" id="source2">
                 </optgroup>
               </select> 
               
             </li>
             <li>
-            <a href="#">Help</a>
+            <a href="#" data-toggle="modal" data-target="#help" >Help</a>
           </li>
         </ul>
         
@@ -74,13 +74,13 @@
               <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Large Map</a>
+              <a class="nav-link disabled" href="#" >Map View (Disabled)</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Large Scatter</a>
+              <a class="nav-link disabled" href="#">Scatter View (Disabled)</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Export</a>
+              <a class="nav-link" data-toggle="modal" data-target="#exporting" href='#'>Export</a>
             </li>
           </ul>
         </nav>
@@ -111,6 +111,36 @@
                 <div class="panel panel-default col-md-12">
                     <div class="panel-body" id="timeseries"></div>
                 </div>
+            </div>
+            <div id="exporting" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Export Data View</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>Exporting not yet supported...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="help" class="modal fade" role="dialog">
+              <div class="modal-dialog">
+
+                <!-- Modal content-->
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Need Help?</h4>
+                  </div>
+                  <div class="modal-body">
+                    <p>That's unfortunate...</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
         </div>
