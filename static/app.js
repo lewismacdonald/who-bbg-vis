@@ -157,7 +157,7 @@ function drawCharts(map_data, scatter_data, series_data) {
     
     // set title ad subtitle
     mapChart.setTitle({
-        text: map_data.fact.title,
+        text: '"' + map_data.fact.title +'" ('+map_data.fact.date+')',
         align: 'center'
     },
     {
@@ -255,6 +255,7 @@ function drawCharts(map_data, scatter_data, series_data) {
             type: 'line',
         }]
     });
+
     Highcharts.wrap(Highcharts.Point.prototype, 'select', function (proceed) {
         
         proceed.apply(this, Array.prototype.slice.call(arguments, 1));
@@ -380,30 +381,67 @@ function getDataAndDraw(primary_id, secondary_id) {
 $(document).ready(function() {
     ///initial -- some DEFAULTS
     var DEFAULT_PRIMARY = "blood-pressure-male";
-    var DEFAULT_SECONDARY = "itu-mobile";
+    var DEFAULT_SECONDARY = "blood-pressure-female";
     document.getElementById("dashboard").style.display = "none";
     document.getElementById("loader").style.display = "block";
     // -- ON INITIAL LOAD-- //
-    getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY);
 
     $.getJSON('/api/v1/sources', function(source_list) {
         $.each(source_list, function(i, source){
-             $('#source1').append($("<option />").val(source.name).text(source.title));
-             $('#source2').append($("<option />").val(source.name).text(source.title));
+             $('#source1').append($("<option>",{
+                class:"source1",
+                value: source.name+'_1',
+                text: source.title
+             }));
+             console.log(source.name);
+             $('#source2').append($("<option>",{
+                class:"source2",
+                value: source.name+'_2',
+                text: source.title
+             }));
         });
-         $('#source1').val(DEFAULT_PRIMARY);
-         $('#source2').val(DEFAULT_SECONDARY);
+         
+         $('#source_picker').selectpicker('val',[DEFAULT_PRIMARY+'_1', DEFAULT_SECONDARY+'_2']);
+         $('#source_picker').selectpicker('refresh');
+         //$('#source1').selectpicker('refresh');
+         //$('#source2').selectpicker('refresh');
     });
+
+    getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY);
     document.getElementById("loader").style.display = "none";
     document.getElementById("dashboard").style.display = "block";
 });
 
-
+/* OLD TWO SOURCES
 // Source List box change
 $('#source1, #source2').change(function() {
     var primary = $('#source1').val();
     var secondary = $('#source2').val();
     console.log('Sources changed to: '+ primary +' '+ secondary );
-    getDataAndDraw(primary, secondary);
+    //getDataAndDraw(primary, secondary);
 });
+*/
+$('#source_picker').on('changed.bs.select', function (e, i, new_val, old_val) {
+  var selected_options = $(this).find(":selected"); // get selected option for the changed select only
+  if (selected_options.length==1){
 
+  } else {
+    var primary = ''
+    var secondary = ''
+    $.each(selected_options, function(i, option){
+        if (i==0){
+            //primary
+            primary = option.value.slice(0, -2)
+        } else {
+            //secondary
+            secondary = option.value.slice(0, -2)
+        }
+        
+      });
+    console.log('Drawing primary, secondary:', primary, secondary)
+    getDataAndDraw(primary, secondary);
+  }
+  
+  
+  //console.log(selected_option.classname);
+});

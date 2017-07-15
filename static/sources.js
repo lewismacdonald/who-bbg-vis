@@ -4,17 +4,15 @@ $(document).ready(function() {
         console.log(data);
         $.each(data, function(i, row) {
             console.log(i, row);
-            table_data.push([row['name'],row['title'],row['source-url'],row['data-file'],row['long-title'],row['description']])
+            table_data.push([row['title'],row['source-name'],row['source-url'],row['description']])
         });
         console.log(table_data);
         $('#source-table').DataTable( {
             data: table_data,
             columns: [
-                {title:"Name"},
+                {title:"Title"},
                 {title:"Source"},
-                {title:"URL"},
-                {title:"Raw"},
-                {title:"Attributes"},
+                {title:"Source Website"},
                 {title:"Description"}
                 ],
             responsive: true,

@@ -14,16 +14,6 @@ import os
 
 # We need some inventory of sources
 Source = namedtuple('Source','id, name, url, local, parsed, type, panel, parser')
-sources=[
-Source(1,'itu-mobile',
-	'http://www.itu.int/en/ITU-D/Statistics/Documents/statistics/2016/Mobile_cellular_2000-2015.xls',
-	'who-data/cellular-normalised.json','parsed-who-data/itu-mobile.json','json',True, CellularParse),
-#Source(4,'itu-mobile','http://www.itu.int/en/ITU-D/Statistics/Documents/statistics/2016/Mobile_cellular_2000-2015.xls','who-data/Mobile_cellular_2000-2015_trimmed.xls','excel',True, CellularParse),
-#Source(2,'itu-cellular-normalised','who-data/cellular_normalised','who-data/cellular_normalised.json','json',True, None),
-Source(4, 'blood-pressure-male','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure-male.json','json',True, BloodPressureParse),
-Source(5, 'blood-pressure-female','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure-female.json','json',True, BloodPressureParse),
-Source(3, 'blood-pressure-both','http://apps.who.int/gho/athena/data/GHO/BP_06.json?profile=simple&filter=SEX:*;COUNTRY:*','who-data/bloodpressure.json','parsed-who-data/blood-pressure.json','json',True, BloodPressureParse)
-]
 
 LocalSource=namedtuple('Source','name, title, parsed, source_name, source_url')
 
@@ -89,20 +79,6 @@ class Loader():
 		for elem in series:
 			elem['y']=elem.pop('value')
 		return series
-
-def list_sources():
-	return [{'id':source.id, 'name':source.name} for source in sources]
-
-def get_source(id):
-	try:
-		source = next(s for s in sources if s.id==id)
-	except:
-		raise IOError("Id {} not found".format(id))
-	else:
-
-		if source.local is None:
-			raise IOError("Id {} has no registered local".format(id))
-		return source
 
 
 if __name__=='__main__':

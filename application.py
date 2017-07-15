@@ -31,7 +31,7 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json, os
 import re
 import logging
-from sources import get_source, Loader, list_sources, list_local_sources, get_local_source
+from sources import Loader, list_local_sources, get_local_source
 import utils
 from werkzeug.utils import secure_filename
 from custom_parsers import UploaderParse
@@ -80,7 +80,11 @@ def get_scatter_data(primary_source_name, secondary_source_name):
     fact = {
         'xlabel':primary_source.title, 
         'ylabel': secondary_source.title,
-        'title':'{} v.s. {}'.format(primary_source.title, secondary_source.title),
+        'title':'"{}" ({}) v.s. "{}" ({})'.format(primary_source.title, \
+            primary.most_recent_date, \
+            secondary_source.title, \
+            secondary.most_recent_date
+            ),
         'source':primary_source.source_name,
         'credit_url':primary_source.source_url,
         'date':primary.most_recent_date
@@ -93,7 +97,7 @@ def get_time_series(source_name, code):
     f = Loader(source)
     fact = {
         'ylabel':source.title,
-        'title':source.title + ' over Time', 
+        'title':'"' + source.title + '" over Time', 
         'source':source.source_name,
         'credit_url':source.source_url,
         'start':min(f.unique_values('date')),
@@ -102,9 +106,6 @@ def get_time_series(source_name, code):
     resp = jsonify({'data': ts, 'fact': fact})
     return resp
 
-@application.route('/api/v1/data')
-def get_source_list():
-    return json.dumps(list_sources())
 
 @application.route('/api/v1/sources')
 def ui_source_list():
@@ -115,14 +116,10 @@ def upload_file():
     try:
         print('Upload request for: {}'.format(str(request.form)))
         title = request.form['title']
+        name = re.sub('[^a-z]','',title.lower())
         description = request.form['description']
         source = request.form['source']
         source_url = request.form['source_url']
-        print title
-        source_name = re.sub('[^a-z]','',title.lower())
-        
-        print source_name
-
         
         # check if the post request has the file part
         if 'file' not in request.files:
@@ -135,13 +132,28 @@ def upload_file():
         if file and allowed_file(file.filename):
             logging.info('Parsing uploaded file locally')
             filename = secure_filename(file.filename)
-            
 
             file = UploaderParse(file).get()
             logging.info('Successfully parsed uploaded file - writing')
-            filename = filename.split('.')[0]+'.json'
+            filename = name+'.json'
+            meta = {   
+                "name":name,
+                "source-name":source,
+                "source-url":source_url,
+                "data-file":"",
+                "title":title,
+                "long-title":title,
+                "description":description    
+            }
+            # write data file
             with open(os.path.join(application.config['UPLOAD_FOLDER'], filename), 'w') as out:
                 out.write(json.dumps(file))
+
+            meta_filename = name+'.meta.json'
+            # write metadata file
+            with open(os.path.join(application.config['UPLOAD_FOLDER'], meta_filename), 'w') as out:
+                out.write(json.dumps(meta))
+
             return render_template("sources.html", title='WHO-BBG Data Visualisation', success='Source added Successfully')
         else:
             return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File Extension')

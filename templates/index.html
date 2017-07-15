@@ -7,6 +7,13 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- select -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.3/css/bootstrap-select.min.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.3/js/bootstrap-select.min.js"></script>
+
+
 	<script src="http://code.highcharts.com/highcharts.js"></script>
 	<script src="http://code.highcharts.com/highcharts-more.js"></script>
 	<script src="https://code.highcharts.com/maps/modules/data.js"></script>
@@ -21,6 +28,8 @@
 
 	<!-- Icon -->
 	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+
 </head>
 
 <body>
@@ -40,6 +49,16 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
             <li>
+              <select class="selectpicker form-control navbar-btn" id="source_picker" 
+              multiple title="Update Display Sources..." data-selected-text-format="static">
+                <optgroup label="Primary source" data-max-options="1" id="source1">
+                </optgroup>
+                <optgroup label="Secondary source" data-max-options="1" id="source2">
+                </optgroup>
+              </select> 
+              
+            </li>
+            <li>
             <a href="#">Help</a>
           </li>
         </ul>
@@ -49,31 +68,19 @@
 
     <div class="wrapper">
       <div class="row">
-        <nav class="col-md-2 hidden-xs-down bg-faded sidebar">
+        <nav class="col-md-2 hidden-xs-down bg-faded sidebar" id="sidebar-nav">
           <ul class="nav nav-pills">
             <li class="nav-item">
               <a class="nav-link active" href="#">Overview <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Reports</a>
+              <a class="nav-link" href="#">Large Map</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Analytics</a>
+              <a class="nav-link" href="#">Large Scatter</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Export</a>
-            </li>
-          </ul>
-          <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
-                <form>
-                    <label for="sel1">Primary:</label>
-                    <select class="form-control" id="source1">
-                    </select>
-                    <label for="sel1">Secondary:</label>
-                    <select class="form-control" id="source2">
-                    </select>
-                </form>
             </li>
           </ul>
         </nav>
