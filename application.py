@@ -29,6 +29,8 @@ API OUTLINE
 
 from flask import Flask, render_template, jsonify, request, redirect, url_for
 import json, os
+import re
+import logging
 from sources import get_source, Loader, list_sources, list_local_sources, get_local_source
 import utils
 from werkzeug.utils import secure_filename
@@ -111,6 +113,17 @@ def ui_source_list():
 @application.route('/upload', methods=['POST'])
 def upload_file():
     try:
+        print('Upload request for: {}'.format(str(request.form)))
+        title = request.form['title']
+        description = request.form['description']
+        source = request.form['source']
+        source_url = request.form['source_url']
+        print title
+        source_name = re.sub('[^a-z]','',title.lower())
+        
+        print source_name
+
+        
         # check if the post request has the file part
         if 'file' not in request.files:
             return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: No file specified!')
@@ -120,17 +133,20 @@ def upload_file():
         if file.filename == '':
             return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: File has No Name!')
         if file and allowed_file(file.filename):
-            print 'saving'
+            logging.info('Parsing uploaded file locally')
             filename = secure_filename(file.filename)
+            
+
             file = UploaderParse(file).get()
+            logging.info('Successfully parsed uploaded file - writing')
             filename = filename.split('.')[0]+'.json'
             with open(os.path.join(application.config['UPLOAD_FOLDER'], filename), 'w') as out:
                 out.write(json.dumps(file))
             return render_template("sources.html", title='WHO-BBG Data Visualisation', success='Source added Successfully')
         else:
             return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File Extension')
-    except:
-        return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File')
+    except Exception as e:
+        return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File'+str(e.__dict__))
 
 
 

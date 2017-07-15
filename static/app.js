@@ -163,7 +163,6 @@ function drawCharts(map_data, scatter_data, series_data) {
     {
         text: 'Source: '+'<a  href="'+map_data.fact.credit_url + '">' + map_data.fact.source +'</a>'
     });
-    mapChart.setSubtitle()
     
     if (mapChart.series[0]) {
         // series already exists
