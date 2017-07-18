@@ -291,8 +291,12 @@ function drawCharts(map_data, scatter_data, series_data) {
                         console.log('not found in scatter:', point.code);
                     };
 
-                    var source_id = $('#source1').val().toString();
-                    var ts_endpoint = '/api/v1/data/'+source_id+'/ts/'+point.code;
+                    // get which sources are selected in the dropdown
+                    var selected_options = $('#source_picker').find(":selected");
+                    // get source name of the 
+                    var source_name = selected_options[0].value.slice(0, -2);
+                    
+                    var ts_endpoint = '/api/v1/data/'+source_name+'/ts/'+point.code;
                     console.log('Fetching: ' + ts_endpoint);
                     $.getJSON(ts_endpoint, function(series_data) {
                         if (timeSeriesChart.series[i]) {
@@ -426,7 +430,7 @@ $('#source1, #source2').change(function() {
 $('#source_picker').on('changed.bs.select', function (e, i, new_val, old_val) {
   var selected_options = $(this).find(":selected"); // get selected option for the changed select only
   if (selected_options.length==1){
-
+    console.log('Only one source has been selected - ERROR')
   } else {
     var primary = ''
     var secondary = ''

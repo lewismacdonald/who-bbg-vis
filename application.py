@@ -140,7 +140,7 @@ def upload_file():
                 "name":name,
                 "source-name":source,
                 "source-url":source_url,
-                "data-file":"",
+                "data-file":filename,
                 "title":title,
                 "long-title":title,
                 "description":description    
