@@ -1,26 +1,18 @@
 # WHO - Bloomberg Vis POC
 
-This project is for scoping out different open source vis solutions to use.
+This project is for creating a basic Data Visualisation app for use. It allows the user to upload basic geographical panel data and analyse this on a set of visualisations.
 
-The implementation here is based on a very simple flask app.
+## Implementation
 
-There are two existing feature demonstrations:
-
- - /bokeh
- - /highmaps
-
-## Tech Resource Links
-
-### Highmaps
-http://www.highcharts.com/docs/maps/custom-geojson-maps
-http://www.highcharts.com/maps/demo/geojson
-
-### Bokeh
-http://bokeh.pydata.org/en/latest/docs/user_guide/geo.html#tile-providers
-http://geo.holoviews.org/Working_with_Bokeh.html
+The application is built using open source packages:
+ - Flask (Web App)
+ - jQuery (UI)
+ - Highcharts (visualisation)
+ - Datatables
 
 ## Get Started
- - Download
+ 
+- Download
 ```bash
 > git clone https://bbgithub.dev.bloomberg.com/lmacdonald18/who-bbg-vis
 ```
@@ -43,10 +35,15 @@ http://geo.holoviews.org/Working_with_Bokeh.html
 - HighMaps: https://localhost:5000/highmaps
 
 ## On aws
+For testing and development, using aws ec2. 
+For deployment, using aws elastic beanstalk.
+
 ```bash
 pip install awsebcli
 
-passphrse etc 
-when setting up
-eb init --no-verify-ssl (assume you have proxies set as env vars)
+# within bloomberg (assume proxies set as environment vars)
+eb init --no-verify-ssl
+```
+
+
 
