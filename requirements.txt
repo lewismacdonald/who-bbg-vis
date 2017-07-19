@@ -7,3 +7,4 @@ Werkzeug==0.12.1
 wheel==0.26.0
 fuzzywuzzy
 requests
+boto3
