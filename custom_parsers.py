@@ -97,15 +97,17 @@ class UploaderParse():
             if t == 0:
                 countries = line[1:]
                 if len(filter(lambda x: len(x) > 2, countries)) != 0:
-                    countries = [self.cmap.get_code(c) for c in countries]
+                    codes = [self.cmap.get_code(c) for c in countries]
                 t = 1
             else:
                 for n, value in enumerate(line[1:]):
                     try:
-                        output.append({'code': countries[n],
-                                        'value': float(value),
-                                        'date': line[0]
-                                        })
+                        output.append({
+                            'code': codes[n],
+                            'name': countries[n],
+                            'value': float(value),
+                            'date': int(line[0])
+                            })
                     except Exception as e:
                         logger.info('Problem parsing %s' %(countries[n]))
         return output
