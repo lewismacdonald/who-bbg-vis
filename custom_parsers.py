@@ -1,6 +1,8 @@
 import utils
 import json
 import csv
+import logging
+logger = logging.getLogger()
 
 class BloodPressureParse():
     """ Source 3"""
@@ -99,10 +101,13 @@ class UploaderParse():
 				t = 1
 			else:
 				for n, value in enumerate(line[1:]):
-					output.append({'code': countries[n],
-									'value': value,
-									'date': line[0]
-									})
+                    try:
+    					output.append({'code': countries[n],
+    									'value': float(value),
+    									'date': line[0]
+    									})
+                    except Exception as e:
+                        logger.info('Problem parsing %s' %(countries[n]))
 		return output							
 		
 
