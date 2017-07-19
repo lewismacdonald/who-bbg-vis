@@ -81,34 +81,31 @@ class CellularParse():
         return output
 
 class UploaderParse():
-	def __init__(self, raw):
-		self.raw = raw
-		self.data = None
-		self.cmap = utils.Countries()
-		
-	@property
-	def value_name(self):
-		return 'Mobile-cellular telephone subscriptions'
-	
-	def get(self):
-		t = 0 
-		output = []
-		for line in csv.reader(self.raw):
-			if t == 0:
-				countries = line[1:]
-				if len(filter(lambda x: len(x) > 2, countries)) != 0:
-					countries = [self.cmap.get_code(c) for c in countries]
-				t = 1
-			else:
-				for n, value in enumerate(line[1:]):
+    def __init__(self, raw):
+        self.raw = raw
+        self.data = None
+        self.cmap = utils.Countries()
+        
+    @property
+    def value_name(self):
+        return 'Mobile-cellular telephone subscriptions'
+    
+    def get(self):
+        t = 0 
+        output = []
+        for line in csv.reader(self.raw):
+            if t == 0:
+                countries = line[1:]
+                if len(filter(lambda x: len(x) > 2, countries)) != 0:
+                    countries = [self.cmap.get_code(c) for c in countries]
+                t = 1
+            else:
+                for n, value in enumerate(line[1:]):
                     try:
-    					output.append({'code': countries[n],
-    									'value': float(value),
-    									'date': line[0]
-    									})
+                        output.append({'code': countries[n],
+                                        'value': float(value),
+                                        'date': line[0]
+                                        })
                     except Exception as e:
                         logger.info('Problem parsing %s' %(countries[n]))
-		return output							
-		
-
-		
+        return output
