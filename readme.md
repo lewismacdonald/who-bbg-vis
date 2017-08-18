@@ -15,7 +15,7 @@ The application is built using open source packages:
 For hosting, we are using aws elasticbeanstalk.
 # [See the Production Site Here](http://who-bbg.eu-west-2.elasticbeanstalk.com/)
 
-## Get Started
+## Development - Get Started
  
 - Download
 ```bash
@@ -36,8 +36,7 @@ For hosting, we are using aws elasticbeanstalk.
 ```bash
 (venv) > python app.py 
 ```
-- Bokeh: http://localhost:5000/bokeh
-- HighMaps: https://localhost:5000/highmaps
+- https://localhost:5000/
 
 ## On aws
 For testing and development, using aws ec2. 
