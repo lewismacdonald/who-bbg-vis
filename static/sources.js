@@ -40,6 +40,23 @@ $(document).ready(function() {
             $('#editSource').modal('show');
         } );
 
+        $('#editsource').submit(function(e){
+            e.preventDefault();
+            var source_to_update = $('#edit-name').val();
+            console.log('Clicked Edit Submit Changes',source_to_update )
+            var api_endpoint = '/api/v1/sources/'+source_to_update;
+
+            $.ajax({
+                url: api_endpoint,
+                type: 'POST',
+                data: $( "#editsource" ).serialize(),
+                complete: function(result) {
+                    //redirect
+                    window.location.href ='/sources'
+                }
+            });
+        });
+
         $('#delete-source').on('click', function() {
             var source_to_delete = $('#edit-name').val();
 

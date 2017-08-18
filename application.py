@@ -32,7 +32,7 @@ import re
 import logging
 import sys
 from sources import S3Loader, list_s3_sources, \
-    get_s3_source, add_s3_source, delete_s3_source
+    get_s3_source, add_s3_source, delete_s3_source, add_s3_metadata
 import utils
 
 
@@ -121,10 +121,24 @@ def get_source_meta(source_name):
         resp = delete_s3_source(source_name)
         if resp:
             flash('Source successfully Deleted','bg-success')
-            return redirect(url_for('source_screen'))
+            
         else:
-            return 'FAIL', 500
+            flash('Error Deleting source','bg-danger')
+        
+    elif request.method=='POST':
+        name = source_name
+        source = request.form['source']
+        description = request.form['description']
+        source_url = request.form['source_url']
+        title =  request.form['title']
 
+        resp = add_s3_metadata(name, source, source_url, title, description)
+        if resp:
+            flash('Source successfully Updated','bg-success')
+        else:
+            flash('Error updating source','bg-danger')
+        
+    return redirect(url_for('source_screen'))
 
 @application.route('/upload', methods=['POST'])
 def upload_file():

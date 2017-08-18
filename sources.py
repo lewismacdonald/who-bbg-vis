@@ -50,6 +50,27 @@ def get_s3_source(name):
         source['description']
         )
 
+def add_s3_metadata(name, source, source_url, title, description):
+    """ Function to add metadata only, for existing source """
+    logging.info('Updating S3 metadata')
+    # TODO: CHECK THAT IT ALREADY EXISTS
+    filename = name+'.json'
+    meta_filename = name+'.meta.json'
+    
+    meta = {   
+        "name":name,
+        "source-name":source,
+        "source-url":source_url,
+        "data-file":filename,
+        "title":title,
+        "long-title":title,
+        "description":description    
+    }
+    if file_manager.add_source_metadata(meta, meta_filename):
+    	return True
+    else:
+    	return False
+
 def add_s3_source(file, name, source, source_url, title, description):
     """ Function to add a Source, taking arguments from the upload form """
     logging.info('Parsing uploaded file locally')
