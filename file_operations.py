@@ -77,6 +77,15 @@ class FileManager():
             self.logger.error('Error writing file: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
             raise
 
+    def delete_s3_file(self, filename):
+        try:
+            s3_key = '/'.join([self.prefix,filename])
+            self.client.delete_object(Bucket=self.bucket, Key=s3_key)
+            self.logger.info('Successfully Deleted File: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
+        except Exception as e:
+            self.logger.error('Error Deleting file: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
+            raise
+
     def get_file_content(self, key, refresh_content=False):
         try:
             content = self.get_s3_file(key, refresh_content)
@@ -108,18 +117,31 @@ class FileManager():
             s3_resp = self.put_s3_file(file_name, json.dumps(file))
             meta_resp = self.put_s3_file(meta_filename, json.dumps(meta))
         except Exception as e:
-            self.logger.error('Error writing to S3 {}'.format(filename))
+            self.logger.error('Error writing to S3 {}'.format(file_name), exc_info=True)
+            return False
+
+        return True
+
+    def remove_source(self, file_name, meta_filename):
+        """ Remove a source. Need to explicitly supply data and meta filenames """
+        try:
+            s3_resp = self.delete_s3_file(file_name)
+            meta_resp = self.delete_s3_file(meta_filename)
+        except Exception as e:
+            self.logger.error('Error deleting Source from S3 {}'.format(file_name), exc_info=True)
             return False
 
         return True
     
-    def edit_source_metadata(self, meta, meta_filename):
+    def add_source_metadata(self, meta, meta_filename):
         """ Update the metadata for a particular file """
-        pass
+        try:
+            meta_resp = self.put_s3_file(meta_filename, json.dumps(meta))
+        except Exception as e:
+            self.logger.error('Error writing metadata to S3 {}'.format(meta_filename), exc_info=True)
+            return False
 
-    def remove_source(self, file_name):
-        """ Move source and metadata to deleted """
-        pass
+        return True
 
     def unremove_source(self, file_name):
         """ Move source and metadata from deleted back to main"""

@@ -77,6 +77,16 @@
                     <p><strong>Success:</strong> {{ success }}</p>
                 </div>
                 {% endif %}
+
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                 {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="panel-body {{ category }}">
+                        <p><strong>Note:</strong> {{ message }}</p>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+                {% endwith %}
           </div>
           <div class="row panel panel-body">
              <div class="dataTables_wrapper form-inline dt-bootstrap">
@@ -122,7 +132,9 @@
                     </div>
                     <div class="form-group">
                        <label class="control-label" for="file">Data File</label>
-                      <input class="form-control" id="fileupload" name="file" type="file" />
+                       <label class="form-control btn btn-info"> Browse
+                         <input id="fileupload" name="file" type="file" style="display:none" />
+                       </label>
                     </div>
                     <div class="form-group">
                       <button class="btn btn-primary " name="submit" type="submit">Submit</button>
@@ -137,6 +149,56 @@
             </div>
           </div>
           <!-- END OF UPLOAD MODAL WINDOW -->
+
+
+          <!-- Modal Source EDIT-->
+          <div id="editSource" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+
+              <!-- Modal content-->
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <h4 class="modal-title">Edit source</h4>
+                </div>
+                <div class="modal-body">
+                   <form  id="uploadsource">
+
+                    <div class="form-group">
+                      <label class="control-label " for="title">Title</label>
+                      <input id="edit-name" class="form-control"  name="title" placeholder="Name" type="text" style="display:none" />
+                      <input id="edit-title" class="form-control"  name="title" placeholder="Title" type="text" />
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label " for="source">Data Source</label>
+                      <input id="edit-source" class="form-control"  name="source" placeholder="e.g. World Bank, Private Data" type="text" />
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label " for="source_url">Source URL</label>
+                      <input id="edit-url" class="form-control"  name="source_url" placeholder="Website of Source (for crediting)" type="url" 
+                             data-fv-uri="true"
+                             data-fv-uri-message="The website address is not valid" />
+                    </div>
+                    <div class="form-group">
+                      <label class="control-label" for="description">Description</label>
+                      <textarea id="edit-description" class="form-control" rows="3" name="description" placeholder="A description of this dataset" /></textarea>
+                    </div>
+                    <div class="form-group">
+                      <button class="btn btn-primary" id="edit-submit">Submit</button>
+                      <button id="delete-source" type="button" class="btn btn-danger" style="float:right">Delete Source</button>
+                    </div>
+                  </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <!-- END OF EDIT SOURCE MODAL WINDOW -->
+
           <!-- START OF HELP MODAL -->
           <div id="help" class="modal fade" role="dialog">
               <div class="modal-dialog">

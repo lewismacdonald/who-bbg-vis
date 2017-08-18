@@ -25,6 +25,15 @@ file_manager = FileManager()
 def list_s3_sources(refresh_content=False):
     return file_manager.sources(refresh_content=refresh_content)
 
+def delete_s3_source(name):
+    """ Delete a source from S3 """
+    # Data File
+    filename = name+'.json'
+    #  Metadata
+    meta_filename = name+'.meta.json'
+
+    return file_manager.remove_source(filename, meta_filename)
+
 def get_s3_source(name):
     try:
         key, source = next((k,s) for k,s in list_s3_sources() if s['name']==name)

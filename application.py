@@ -26,18 +26,21 @@ API OUTLINE
 /api/v1/data/{id}/ts/{code} = [{y: <value>, t: <time/date value>}]
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
 import json, os
 import re
 import logging
 import sys
-from sources import S3Loader, list_s3_sources, get_s3_source, add_s3_source
+from sources import S3Loader, list_s3_sources, \
+    get_s3_source, add_s3_source, delete_s3_source
 import utils
 
 
 application = Flask(__name__)
+application.secret_key = os.getenv('FLASK_SECRET','APK123')
 
 application.config['UPLOAD_FOLDER'] = 'parsed-who-data' 
+
 
 logging.basicConfig(stream = sys.stdout, level=logging.INFO)
 
@@ -109,6 +112,19 @@ def ui_source_list():
     """ Return List of Source OBJECTS"""
     return json.dumps([source for s3_key, source in list_s3_sources(refresh_content=True)])
 
+@application.route('/api/v1/sources/<source_name>', methods=['GET','DELETE','POST'])
+def get_source_meta(source_name):
+    if request.method=='GET':
+        source = get_s3_source(source_name)
+        return json.dumps(source._asdict())
+    elif request.method=='DELETE':
+        resp = delete_s3_source(source_name)
+        if resp:
+            flash('Source successfully Deleted','bg-success')
+            return redirect(url_for('source_screen'))
+        else:
+            return 'FAIL', 500
+
 
 @application.route('/upload', methods=['POST'])
 def upload_file():
@@ -126,17 +142,21 @@ def upload_file():
         # Check the Upload Requeust is valid
         request_errors = utils.validate_upload(request)
         if not request_errors is None:
-            return render_template("sources.html", title='WHO-BBG Data Visualisation', error=request_errors)
+            flash(request_errors, 'bg-danger')
+            return redirect(url_for('source_screen'))
 
         # valid request
         resp = add_s3_source(request.files['file'], name, source, source_url, title, description)
 
         if resp:
-            return render_template("sources.html", title='WHO-BBG Data Visualisation', success='Source added Successfully')
+            flash('Source added Successfully', 'bg-success')
+            return redirect(url_for('source_screen'))
         else:
-            return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File'+str(e.__dict__))
+            flash('Failed Uploading: Invalid File'+str(e.__dict__))
+            return redirect(url_for('source_screen'), 'bg-danger')
     except Exception as e:
-        return render_template("sources.html", title='WHO-BBG Data Visualisation', error='Failed Uploading: Invalid File'+str(e.__dict__))
+        flash('Failed Uploading: Invalid File'+str(e.__dict__))
+        return redirect(url_for('source_screen'), 'bg-danger')
 
 
 
