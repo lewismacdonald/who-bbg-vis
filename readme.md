@@ -10,8 +10,8 @@ The application is built using open source packages:
  - Highcharts (visualisation)
  - Datatables
 
-For hosting, we are using aws elasticbeanstalk. The production url is:
-# http://who-bbg.eu-west-2.elasticbeanstalk.com/
+For hosting, we are using aws elasticbeanstalk.
+# [See the Production Site Here](http://who-bbg.eu-west-2.elasticbeanstalk.com/)
 
 ## Get Started
  
