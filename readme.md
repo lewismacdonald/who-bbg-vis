@@ -2,6 +2,8 @@
 
 The aim of this project is to creating a basic Data Visualisation app for WHO stakeholders to use in order to visualise datasets. It allows the user to upload basic geographical panel data and analyse this on a set of visualisations.
 
+The data is stored on S3.
+
 ## Implementation
 
 The application is built using open source packages:
