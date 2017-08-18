@@ -36,7 +36,7 @@ For hosting, we are using aws elasticbeanstalk.
 ```bash
 (venv) > python app.py 
 ```
-- https://localhost:5000/
+- Navigate to: https://localhost:5000/
 
 ## On aws
 For testing and development, using aws ec2. 
