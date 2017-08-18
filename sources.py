@@ -4,87 +4,99 @@
 
 import requests
 import itertools
-
+import logging
 from collections import namedtuple
 from io import BytesIO
-from custom_parsers import BloodPressureParse, CellularParse
+from file_operations import FileManager
+from werkzeug.utils import secure_filename
+from custom_parsers import BloodPressureParse, CellularParse, UploaderParse
 import json
 import os
 
+LocalSource = namedtuple('Source','name, title, parsed, source_name, source_url')
 
-# We need some inventory of sources
-Source = namedtuple('Source','id, name, url, local, parsed, type, panel, parser')
-
-LocalSource=namedtuple('Source','name, title, parsed, source_name, source_url')
+S3Source = namedtuple('Source','name, title, key, source_name, source_url, description')
 
 DATA_DIRECTORY='parsed-who-data'
 
+# Manages S3 Interaction
+file_manager = FileManager()
 
+def list_s3_sources(refresh_content=False):
+    return file_manager.sources(refresh_content=refresh_content)
 
-def list_local_sources():
-	files= [os.path.join(DATA_DIRECTORY,data_file) for data_file in os.listdir(DATA_DIRECTORY) if '.meta' in data_file]
-	print(files)
-	source_list = [json.loads(open(f,'r').read()) for f in files]
-	return source_list
+def get_s3_source(name):
+    try:
+        key, source = next((k,s) for k,s in list_s3_sources() if s['name']==name)
+    except:
+        print list_s3_sources()
+        raise IOError("Source {} not found".format(name))
 
-def get_local_source(name):
-	try:
-		source = next(s for s in list_local_sources() if s['name']==name)
-	except:
-		raise IOError("Source {} not found".format(name))
+    return S3Source(
+        source['name'],
+        source['title'],
+        key,
+        source['source-name'],
+        source['source-url'],
+        source['description']
+        )
 
-	return LocalSource(
-			source['name'],
-			source['title'],
-			os.path.join(DATA_DIRECTORY, source['data-file']),
-			source['source-name'],
-			source['source-url'])
+def add_s3_source(file, name, source, source_url, title, description):
+    """ Function to add a Source, taking arguments from the upload form """
+    logging.info('Parsing uploaded file locally')
+    filename = secure_filename(file.filename)
+    file_content = UploaderParse(file).get()
+    logging.info('Successfully parsed uploaded file')
 
-class Loader():
-	def __init__(self, source):
-		self.source = source
-		self.data = json.loads(open(source.parsed,'r').read())
-		self.standard_attributes = ['date','code','name','value']
-		self.additional_attributes = [k for k in self.data[0].keys() if k not in self.standard_attributes]
-		self.default_attributes = [max([x[k] for x in self.data]) for k in self.additional_attributes]
-		self.most_recent_date = max([x['date'] for x in self.data])
-		self.date_range = list(set([x['date'] for x in self.data]))	
+    filename = name+'.json'
 
-	def unique_values(self, attribute):
-		return list(set([x.get(attribute) for x in self.data]))
+    # Construct Metadata
+    meta_filename = name+'.meta.json'
+    
+    meta = {   
+        "name":name,
+        "source-name":source,
+        "source-url":source_url,
+        "data-file":filename,
+        "title":title,
+        "long-title":title,
+        "description":description    
+    }
+    if file_manager.add_source(file_content, filename, meta, meta_filename):
+        return True
+    else:
+        return False
 
-	@property
-	def list_sources(self):
-		permute = [[self.source.name]]
-		for attr in self.additional_attributes:
-			permute.append(self.unique_values(attr))
+class S3Loader():
+    def __init__(self, s3source):
+        self.source = s3source
+        self.data = file_manager.get_file_content(s3source.key)
+        self.standard_attributes = ['date','code','name','value']
+        self.additional_attributes = [k for k in self.data[0].keys() if k not in self.standard_attributes]
+        self.default_attributes = [max([x[k] for x in self.data]) for k in self.additional_attributes]
+        self.most_recent_date = max([x['date'] for x in self.data])
+        self.date_range = list(set([x['date'] for x in self.data]))    
 
-		return ['_'.join(source_elem) for source_elem in itertools.product(*permute)]
+    def unique_values(self, attribute):
+        return list(set([x.get(attribute) for x in self.data]))
 
-	def get(self, **kwargs):
-		if 'date' in kwargs:
-			date = kwargs.pop('date')
-		else:
-			date = self.most_recent_date
-		filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
-		filter_dict.update(kwargs)
-		condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
-		return [elem for elem in self.data if elem['date']==date and condition(elem)]
+    def get(self, **kwargs):
+        if 'date' in kwargs:
+            date = kwargs.pop('date')
+        else:
+            date = self.most_recent_date
+        filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
+        filter_dict.update(kwargs)
+        condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
+        return [elem for elem in self.data if elem['date']==date and condition(elem)]
 
-	def time_series(self, code, **kwargs):
-		filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
-		filter_dict.update(kwargs)
-		condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
-		series = [elem for elem in self.data if elem['code']==code and condition(elem)]
-		for elem in series:
-			elem['y']=elem.pop('value')
-		return series
+    def time_series(self, code, **kwargs):
+        filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
+        filter_dict.update(kwargs)
+        condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
+        series = [elem for elem in self.data if elem['code']==code and condition(elem)]
+        for elem in series:
+            elem['y']=elem.pop('value')
+        return series
 
-
-if __name__=='__main__':
-	for s in sources:
-		parser = get_source(s.id)
-		data = parser.get()		
-		with open('parsed-who-data/'+s.name+'.json', 'wb') as out:
-			out.write(json.dumps(data))
 

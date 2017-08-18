@@ -1,7 +1,36 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from collections import defaultdict
-#from fuzzywuzzy import process
+
+
+ALLOWED_EXTENSIONS = set(['csv'])
+
+
+def allowed_file(filename):
+    """ Ensure filename is in allowed list"""
+    return '.' in filename and \
+            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def validate_upload(request):
+    """ Validate the the upload is OK. Return None if OK, else a message for the User"""
+    # check if the post request has the file part
+    if 'file' not in request.files:
+        return 'Failed Uploading: No file specified!'
+    
+    file = request.files['file']
+    # if user does not select file, browser also
+    # submit a empty part without filename
+    
+    if file.filename == '':
+        return 'Failed Uploading: File has No Name!'
+    
+    if not allowed_file(file.filename):
+        return 'Failed Uploading: Invalid File Extension'
+
+    return None
+
+
 
 def join(xs, ys, key='key', value='value', fields=[]):
     """ Join two lists of dicts """
@@ -17,6 +46,8 @@ def join(xs, ys, key='key', value='value', fields=[]):
                  if a in fields}
             )
     return d.values()
+
+
 
 class Countries():
 	"""

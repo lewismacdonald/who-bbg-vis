@@ -365,7 +365,7 @@ function drawCharts(map_data, scatter_data, series_data) {
 };
 
 
-function getDataAndDraw(primary_id, secondary_id) {
+function getDataAndDraw(primary_id, secondary_id, callback) {
     
     $.getJSON('/api/v1/data/'+primary_id+'/map', function(map_data) {
         $.getJSON('api/v1/data/'+primary_id+'/scatter/'+secondary_id, function(scatter_data) {
@@ -377,20 +377,22 @@ function getDataAndDraw(primary_id, secondary_id) {
             });
         });
     });
-    
+    callback();
 };
 
+function showLoading() {
+    $("body").addClass("loading");
+};
+function hideLoading() {
+    $("body").removeClass("loading"); 
+}
 
 // ON LOAD
+showLoading();
 $(document).ready(function() {
     ///initial -- some DEFAULTS
     var DEFAULT_PRIMARY = "blood-pressure-male";
     var DEFAULT_SECONDARY = "blood-pressure-female";
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("loader").style.display = "block";
-    // -- ON INITIAL LOAD-- //
-
-
 
     $.getJSON('/api/v1/sources', function(source_list) {
         $.each(source_list, function(i, source){
@@ -409,24 +411,14 @@ $(document).ready(function() {
          
          $('#source_picker').selectpicker('val',[DEFAULT_PRIMARY+'_1', DEFAULT_SECONDARY+'_2']);
          $('#source_picker').selectpicker('refresh');
-         //$('#source1').selectpicker('refresh');
-         //$('#source2').selectpicker('refresh');
+
     });
 
-    getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY);
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
+    getDataAndDraw(DEFAULT_PRIMARY, DEFAULT_SECONDARY, hideLoading);
+
 });
 
-/* OLD TWO SOURCES
-// Source List box change
-$('#source1, #source2').change(function() {
-    var primary = $('#source1').val();
-    var secondary = $('#source2').val();
-    console.log('Sources changed to: '+ primary +' '+ secondary );
-    //getDataAndDraw(primary, secondary);
-});
-*/
+
 $('#source_picker').on('changed.bs.select', function (e, i, new_val, old_val) {
   var selected_options = $(this).find(":selected"); // get selected option for the changed select only
   if (selected_options.length==1){
@@ -448,6 +440,5 @@ $('#source_picker').on('changed.bs.select', function (e, i, new_val, old_val) {
     getDataAndDraw(primary, secondary);
   }
   
-  
-  //console.log(selected_option.classname);
+
 });

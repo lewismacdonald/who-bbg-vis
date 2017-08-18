@@ -86,10 +86,6 @@ class UploaderParse():
         self.data = None
         self.cmap = utils.Countries()
         
-    @property
-    def value_name(self):
-        return 'Mobile-cellular telephone subscriptions'
-    
     def get(self):
         t = 0 
         output = []
