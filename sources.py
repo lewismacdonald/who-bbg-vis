@@ -102,23 +102,51 @@ class S3Loader():
         self.source = s3source
         self.data = file_manager.get_file_content(s3source.key)
         self.standard_attributes = ['date','code','name','value']
-        self.additional_attributes = [k for k in self.data[0].keys() if k not in self.standard_attributes]
-        self.default_attributes = [max([x[k] for x in self.data]) for k in self.additional_attributes]
-        self.most_recent_date = max([x['date'] for x in self.data])
-        self.date_range = list(set([x['date'] for x in self.data]))    
+        
+    @property
+    def additional_attributes(self):
+        return [k for k in self.data[0].keys() if k not in self.standard_attributes]
+        
+    @property
+    def default_attributes(self):
+        return [max([x[k] for x in self.data]) for k in self.additional_attributes]
+    
+    @property
+    def most_recent_date(self):
+        return max([x['date'] for x in self.data])
+
+    @property
+    def date_range(self):
+        return list(set([x['date'] for x in self.data]))    
 
     def unique_values(self, attribute):
         return list(set([x.get(attribute) for x in self.data]))
 
-    def get(self, **kwargs):
-        if 'date' in kwargs:
-            date = kwargs.pop('date')
+    def get(self, v2=False, **kwargs):
+        """ Handle API V1 (single date) and V2 (all dates)
+        This difference between v1 and v2 is simply
+        that v2 always returns data for ALL dates. Where
+        v1 only returns for a particular date, which is
+        either supplied or chosen to be the 'latest' (highest)
+        date.
+        """
+        if not v2:
+            if 'date' in kwargs:
+                date = kwargs.pop('date')
+                # force the date date to
+                if isinstance(self.most_recent_date, int):
+                    date = int(date)
+            else:
+                date = self.most_recent_date
+            filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
+            filter_dict.update(kwargs)
+            condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
+            return [elem for elem in self.data if elem['date']==date and condition(elem)]
         else:
-            date = self.most_recent_date
-        filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
-        filter_dict.update(kwargs)
-        condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
-        return [elem for elem in self.data if elem['date']==date and condition(elem)]
+            filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}
+            filter_dict.update(kwargs)
+            condition = lambda elem: all([elem[k]==v for k, v in filter_dict.items()])
+            return [elem for elem in self.data if condition(elem)]
 
     def time_series(self, code, **kwargs):
         filter_dict = {k: v for k, v in zip(self.additional_attributes, self.default_attributes)}

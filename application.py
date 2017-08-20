@@ -56,7 +56,26 @@ def source_screen():
 
 
 @application.route('/api/v1/data/<source_name>/map')
-def get_map_data(source_name):
+@application.route('/api/v1/data/<source_name>/map/<ts>')
+def get_map_data(source_name, ts=None):
+    """ API Method to fetch data for the map """
+    source = get_s3_source(source_name)
+    f = S3Loader(source)
+    if ts is None:
+        ts = f.most_recent_date
+    fact = {
+        'ylabel':source.title,
+        'title':source.title, 
+        'source':source.source_name,
+        'credit_url':source.source_url,
+        'date': ts
+        }
+    logging.info('**API V1 Response **: MAP data for %s %s' % (source_name, ts))
+    return json.dumps({'data': f.get(date=ts), 'fact': fact})
+
+
+@application.route('/api/v2/data/<source_name>/map')
+def get_map_time_data(source_name):
     source = get_s3_source(source_name)
     f = S3Loader(source)
     fact = {
@@ -66,29 +85,42 @@ def get_map_data(source_name):
         'credit_url':source.source_url,
         'date': f.most_recent_date
         }
-    return json.dumps({'data': f.get(), 'fact': fact})
+    return json.dumps({'data': f.get(v2=True), 'fact': fact, 'dates':f.date_range})
 
 
 @application.route('/api/v1/data/<primary_source_name>/scatter/<secondary_source_name>')
-def get_scatter_data(primary_source_name, secondary_source_name):
+@application.route('/api/v1/data/<primary_source_name>/scatter/<secondary_source_name>/<ts>')
+@application.route('/api/v1/data/<primary_source_name>/scatter/<secondary_source_name>/<ts>/<secondary_ts>')
+def get_scatter_data(primary_source_name, secondary_source_name, ts=None, secondary_ts=None):
+    """ API Method to get data for the scatter """
+
+    # Load data sources
     primary_source = get_s3_source(primary_source_name)
     primary = S3Loader(primary_source)
     secondary_source = get_s3_source(secondary_source_name)
     secondary = S3Loader(secondary_source)
-    # join on the code
-    output = utils.join(primary.get(), secondary.get(), key='code', fields=['name'])
+    
+    if ts is None:
+        ts = primary.most_recent_date
+
+    if secondary_ts is None:
+        secondary_ts = secondary.most_recent_date
+        
+    # Join the two datasets on the country code
+    output = utils.join(primary.get(date=ts), secondary.get(date=secondary_ts), key='code', fields=['name'])
     fact = {
         'xlabel':primary_source.title, 
         'ylabel': secondary_source.title,
-        'title':'"{}" ({}) v.s. "{}" ({})'.format(primary_source.title, \
-            primary.most_recent_date, \
-            secondary_source.title, \
-            secondary.most_recent_date
-            ),
+        'title':'"{}" v.s. "{}" ({})'.format(primary_source.title, secondary_source.title, ts),
         'source':primary_source.source_name,
         'credit_url':primary_source.source_url,
-        'date':primary.most_recent_date
+        'secondary_source':secondary_source.source_name,
+        'secondary_credit_url':secondary_source.source_url,
+        'date':ts,
+        'seondary_date':secondary_ts
         }
+    logging.info('**API V1 Response **: SCATTER data for %s %s %s %s' % 
+        (primary_source_name, secondary_source_name, ts, secondary_ts))
     return json.dumps({'data': output, 'fact': fact})
 
 @application.route('/api/v1/data/<source_name>/ts/<code>')
@@ -104,6 +136,7 @@ def get_time_series(source_name, code):
         }
     ts = f.time_series(code=code)
     resp = jsonify({'data': ts, 'fact': fact})
+    logging.info('**API V1 Response **: SERIES data for %s %s' % (source_name, code))
     return resp
 
 
