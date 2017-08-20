@@ -117,7 +117,25 @@ $(document).ready(function() {
                 opposite: true
             },
             tooltip: {
-                split: true
+                split: true,
+                pointFormat: '<b>{point.name}</b><br>{point.y} ({point.x})'
+            },
+            marker: {
+                radius: 4,
+                states: {
+                    hover: {
+                        enabled: true,
+                        fillColor: '#a4edba',
+                        lineColor: 'rgb(100,100,100)'
+                    },
+                    select: {
+                        enabled: true,
+                        fillOpacity:1,
+                        fillColor: '#a4edba',
+                        lineColor: 'rgb(100,100,100)',
+                        radius: 8
+                    }
+                }
             },
             series: [{}],
         }
@@ -126,7 +144,7 @@ $(document).ready(function() {
     // with document scope
     var map_data = {};
     var scatter_data = {};
-    var series_data = {};
+    //var series_data = {};
     // can hold several
     var series_container = [];
 
@@ -252,10 +270,10 @@ $(document).ready(function() {
 
         timeSeriesChart.update({
             title: {
-                text: series_data.fact.title
+                text: series_container[0].fact.title
             },
             subtitle: {
-                text: 'Source: '+'<a href="'+series_data.fact.credit_url + '">' + series_data.fact.source +'</a>'
+                text: 'Source: '+'<a href="'+series_container[0].fact.credit_url + '">' + series_container[0].fact.source +'</a>'
             },
             plotOptions: {
                 series: {
@@ -266,7 +284,7 @@ $(document).ready(function() {
                         enabled: true
                     },
                     threshold: 0,
-                    pointStart: series_data.fact.start,
+                    pointStart: series_container[0].fact.start,
                     allowPointSelect: true
                 }
             }   
@@ -274,14 +292,14 @@ $(document).ready(function() {
         // TODO FIX 
         
         timeSeriesChart.series[0].update({
-            name: series_data.data[0].name,
-            data: series_data.data,
+            name: series_container[0].data[0].name,
+            data: series_container[0].data,
             allowPointSelect: true,
             type: 'line',
-            pointStart: series_data.fact.start
+            pointStart: series_container[0].fact.start
         });
         timeSeriesChart.redraw();
-        console.log('Time Series Data:', series_data, 'Chart:', timeSeriesChart)
+        console.log('Time Series Data:', series_container[0], 'Chart:', timeSeriesChart)
 
 
         if (typeof callback!='undefined'){
@@ -322,7 +340,17 @@ $(document).ready(function() {
 
                 // deal with map select event only for now
                 var points = mapChart.getSelectedPoints();
+                if (points.length){
+                    // stuff is selected
+                } else {
+                    // nothing is selected.
+                };
                 console.log(points.length.toString() + ' points selected:', points);
+                var selected_options = $('#source_picker').find(":selected");
+                // get source name of the primary
+                var source_name = selected_options[0].value.slice(0, -2);
+                // update the time series
+                updateTimeSeries(source_name, points)
 
                 $.each(points, function(i, point) {
                     // select the scatter
@@ -343,36 +371,6 @@ $(document).ready(function() {
                     } else {
                         console.log('not found in scatter:', point.code);
                     };
-
-                    // get which sources are selected in the dropdown
-                    var selected_options = $('#source_picker').find(":selected");
-                    // get source name of the primary
-                    var source_name = selected_options[0].value.slice(0, -2);
-                    
-                    var ts_endpoint = '/api/v1/data/'+source_name+'/ts/'+point.code;
-                    console.log('Fetching: ' + ts_endpoint);
-                    $.getJSON(ts_endpoint, function(series_response) {
-                        series_data = series_response;
-                        if (timeSeriesChart.series[i]) {
-                            console.log('update 0-th time series');
-                            timeSeriesChart.series[i].update({
-                                name: point.name,
-                                data: series_data.data,
-                                type: 'line'
-                            }, false);
-                        } else {
-                            console.log('adding new time series');
-                            timeSeriesChart.addSeries({
-                                name: point.name,
-                                data: series_data.data,
-                                type: 'line'
-                            }, false);
-                        }
-                        while (timeSeriesChart.series.length > points.length) {
-                            timeSeriesChart.series[timeSeriesChart.series.length - 1].remove(false);
-                        }
-                        timeSeriesChart.redraw();
-                    });
                     
                 });
             } else if (this.series['type'] =='scatter') {
@@ -409,7 +407,7 @@ $(document).ready(function() {
             } else {
                 var point = timeSeriesChart.getSelectedPoints();
                 console.log('Timeseries was clicked', point);
-                console.log('Scatter', scatter_data,'Map',map_data, 'TS', series_data);
+                //console.log('Scatter', scatter_data,'Map',map_data, 'TS', series_data);
                 getDataAndDrawWithDate(point[0].date)
             };
         } else if (trigger.trigger=='chartsync') {
@@ -420,48 +418,59 @@ $(document).ready(function() {
         } 
     });
 
-    
-    function updateTimeSeries(source, point, replace) {
-        // conditionally add or update chart
-        // replace -- default false
-        replace = typeof a !== 'undefined' ? a : false;
+    function getExistingCodes() {
+        var codes = [];
+        $.each(series_container, function(i, data) {
+            codes.push(data.fact.code);
+        })
+        return codes
+    };
 
-        var ts_endpoint = '/api/v1/data/'+source+'/ts/'+point.code;
-        console.log('Fetching time series: ' + ts_endpoint);
+    function updateTimeSeries(source, points) {
+        console.log('Updating Time series', points, source)
+        var existing_codes = getExistingCodes();
 
-        // if 
-        $.getJSON(ts_endpoint, function(series_response) {
-            if (replace) {
-                console.log('update 0-th time series');
-                // add the series data for this code
-                series_container = [series_response];
+        console.log('Existing codes', existing_codes)
 
-                timeSeriesChart.series[0].update({
-                    name: point.name,
-                    data: series_data.data,
-                    type:'line'
-                });
-            } else {
-                console.log('adding new time series');
-                // add the series data for this code
+        $.each(points, function(i, point) {
+            // if already in series_container, dont get anything
+ 
+            var ts_endpoint = '/api/v1/data/'+source+'/ts/'+point.code;
+            console.log('Fetching time series: ' + ts_endpoint);
+            $.getJSON(ts_endpoint, function(series_response) {
                 series_container.push(series_response);
-
-                timeSeriesChart.addSeries({
-                    name: point.name,
-                    data: series_response.data,
-                    type: 'line'
-                }, false);
-            }
-
-            // remove straggler time series
-            while (timeSeriesChart.series.length > series_container.length) {
+                if (timeSeriesChart.series[i]) {
+                    // add the series data for this code
+                    
+                    timeSeriesChart.series[i].update({
+                        id: point.code,
+                        name: point.name,
+                        data: series_response.data,
+                        type:'line'
+                    });
+                } else {
+                    // add the series data for this code
+                    
+                    timeSeriesChart.addSeries({
+                        id: point.code,
+                        name: point.name,
+                        data: series_response.data,
+                        type: 'line'
+                    });
+                }  
+            });
+            
+            while (timeSeriesChart.series.length > points.length) {
                 timeSeriesChart.series[timeSeriesChart.series.length - 1].remove(false);
             }
-            timeSeriesChart.redraw();
+            //timeSeriesChart.redraw();
         });
+        console.log('Series Container AFTER', series_container)
     }; 
 
     function getDataAndDrawWithDate(ts) {
+        //TODO: update points rather than update the 
+        // entire series. this will make animation nicer.
         console.log('CALLED GET DATA AND DRAW WITH DATE ***')
         var selected_sources = $('#source_picker').find(":selected");
         var primary = ''
@@ -475,7 +484,7 @@ $(document).ready(function() {
                 secondary = option.value.slice(0, -2)
             }
         });
-        console.log('Drawing primary, secondary:', primary, secondary, 'ts:', ts, 'current ts data', series_data)
+        //console.log('Drawing primary, secondary:', primary, secondary, 'ts:', ts, 'current ts data', series_data)
         var map_endpoint ='/api/v1/data/'+primary+'/map/'+ts
         $.getJSON(map_endpoint, function(map_response) {
             var scatter_endpoint = 'api/v1/data/'+primary+'/scatter/'+secondary+'/'+ts+'/'+ts
@@ -497,7 +506,7 @@ $(document).ready(function() {
                     });
                     map_data = map_response;
                     scatter_data = scatter_response;
-                    series_data = series_response; 
+                    series_container.push(series_response); 
 
                     drawCharts(callback);
                 });

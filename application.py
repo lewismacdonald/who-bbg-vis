@@ -131,6 +131,7 @@ def get_time_series(source_name, code):
         'ylabel':source.title,
         'title':'"' + source.title + '" over Time', 
         'source':source.source_name,
+        'code':code,
         'credit_url':source.source_url,
         'start':min(f.unique_values('date')),
         }
