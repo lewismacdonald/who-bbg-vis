@@ -509,7 +509,11 @@ $(document).ready(function() {
             $.getJSON('api/v1/data/'+primary_id+'/scatter/'+secondary_id, function(scatter_response) {
                 $.getJSON('/api/v1/data/'+primary_id+'/ts/US', function(series_response) {
                     $.each(map_data.data, function () {
-                        this.flag = this.code.replace('UK', 'GB').toLowerCase();
+                        if (typeof(this.code)!="undefined"){
+                            if (this.code.hasOwnProperty('replace')) {
+                                this.flag = this.code.replace('UK', 'GB').toLowerCase()
+                            };
+                        }
                     });
                     map_data = map_response;
                     scatter_data = scatter_response;
