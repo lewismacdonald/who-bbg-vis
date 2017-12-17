@@ -14,7 +14,8 @@ $(document).ready(function() {
         mapNavigation: {
             enabled: true,
             buttonOptions: {
-                verticalAlign: 'bottom'
+                alignTo: 'spacingBox',
+                padding: 5
             }
         },
         tooltip: {
@@ -155,6 +156,12 @@ $(document).ready(function() {
     var mapChart = new Highcharts.mapChart('map', mapChartOptions);
     var timeSeriesChart = new Highcharts.chart('timeseries', timeSeriesOptions);
 
+    function scatterSourcesCredit(data_fact) {
+        var source_html =  'Sources: '+'<a  href="'+scatter_data.fact.credit_url + '">' 
+        + scatter_data.fact.source +'</a> / <a  href="' + data_fact.secondary_credit_url + '">' 
+        + scatter_data.fact.secondary_source +'</a>';
+        return source_html
+    }
 
     function drawCharts(callback) {
         console.log('DRAW CHARTS CALLED ****')
@@ -196,7 +203,7 @@ $(document).ready(function() {
                 text: scatter_data.fact.title
             },
             subtitle: {
-                text: 'Source: '+'<a  href="'+scatter_data.fact.credit_url + '">' + scatter_data.fact.source +'</a>'
+                text: scatterSourcesCredit(scatter_data.fact)
             },
             xAxis: {
                 title: {

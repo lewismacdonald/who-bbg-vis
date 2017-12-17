@@ -4,6 +4,7 @@
 
 import requests
 import itertools
+import datetime
 import logging
 from collections import namedtuple
 from io import BytesIO
@@ -15,7 +16,7 @@ import os
 
 LocalSource = namedtuple('Source','name, title, parsed, source_name, source_url')
 
-S3Source = namedtuple('Source','name, title, key, source_name, source_url, description')
+S3Source = namedtuple('Source','name, title, key, source_name, source_url, description, upload_data')
 
 DATA_DIRECTORY='parsed-who-data'
 
@@ -47,12 +48,12 @@ def get_s3_source(name):
         key,
         source['source-name'],
         source['source-url'],
-        source['description']
+        source['description'],
+        source.get('upload-data')
         )
 
-def add_s3_metadata(name, source, source_url, title, description):
+def add_s3_metadata(name, source, source_url, title, description, upload_data=None):
     """ Function to add metadata only, for existing source """
-    logging.info('Updating S3 metadata')
     # TODO: CHECK THAT IT ALREADY EXISTS
     filename = name+'.json'
     meta_filename = name+'.meta.json'
@@ -64,8 +65,10 @@ def add_s3_metadata(name, source, source_url, title, description):
         "data-file":filename,
         "title":title,
         "long-title":title,
-        "description":description    
+        "description":description,
+        "upload-data":upload_data
     }
+    logging.info('Writing metadata to s3: %s', meta)
     if file_manager.add_source_metadata(meta, meta_filename):
     	return True
     else:
@@ -75,8 +78,24 @@ def add_s3_source(file, name, source, source_url, title, description):
     """ Function to add a Source, taking arguments from the upload form """
     logging.info('Parsing uploaded file locally')
     filename = secure_filename(file.filename)
-    file_content = UploaderParse(file).get()
-    logging.info('Successfully parsed uploaded file')
+    # save the uploaded file
+    fname, format = filename.split('.')
+
+    upload_filename = '_'.join(['upload',fname,str(datetime.datetime.now())])
+    upload_key = '.'.join([upload_filename,format])
+    raw_resp = file_manager.add_raw_file(file, upload_key)
+
+    logging.info('Successfully saved raw uploaded file to s3: %s', upload_key)
+    
+    file.seek(0)
+    try:
+        file_content = UploaderParse(file).get()
+    except IOError as ee:
+        msg = 'Error parsing file; probably an encoding issue, make sure to use windows line endings'
+        logging.info(msg)
+        return {'status': msg} 
+
+    logging.info('Successfully parsed uploaded file: %s', filename)
 
     filename = name+'.json'
 
@@ -90,12 +109,13 @@ def add_s3_source(file, name, source, source_url, title, description):
         "data-file":filename,
         "title":title,
         "long-title":title,
-        "description":description    
+        "description":description,
+        "upload-data":upload_key
     }
     if file_manager.add_source(file_content, filename, meta, meta_filename):
-        return True
+        return {'status':'OK'}
     else:
-        return False
+        return {'status':'FAILED'}
 
 class S3Loader():
     def __init__(self, s3source):

@@ -3,7 +3,7 @@ import boto3.session
 import os
 import logging
 import json
-from StringIO import StringIO
+from cStringIO import StringIO
 
 BUCKET = 'whobbg'
 
@@ -11,8 +11,10 @@ IS_PROD = ('WHO_BBG_PROD_ENV' in os.environ)
 
 if IS_PROD:
     S3_PREFIX = 'prod/parsed-data'
+    S3_RAW_PREFIX = 'prod/raw'
 else:
     S3_PREFIX = 'dev/parsed-data'
+    S3_RAW_PREFIX = 'dev/raw'
 
 
 def get_s3_client():
@@ -24,9 +26,10 @@ def get_s3_client():
 
 class FileManager():
     """ Manage S3 Interactions to save and delete files """
-    def __init__(self, client=None, bucket=None, prefix=None, lazy=True):
+    def __init__(self, client=None, bucket=None, prefix=None, raw_prefix=None, lazy=True):
         self.client = client or get_s3_client()
         self.prefix = prefix or S3_PREFIX
+        self.raw_prefix = raw_prefix or S3_RAW_PREFIX
         self.bucket = bucket or BUCKET
         self.bucket_content = None
         self.env = 'PROD' if IS_PROD else 'DEV'
@@ -68,20 +71,26 @@ class FileManager():
             # nothing for now
             raise 
     
-    def put_s3_file(self, filename, content):
+    def put_s3_file(self, filename, content, prefix=None):
+        if prefix is None:
+            prefix = self.prefix
         try:
-            s3_key = '/'.join([self.prefix,filename])
-            self.client.upload_fileobj(Bucket=self.bucket, Fileobj=StringIO(content), Key=s3_key)
+            s3_key = '/'.join([prefix,filename])
+            resp = self.client.upload_fileobj(Bucket=self.bucket, Fileobj=StringIO(content), Key=s3_key)
             self.logger.info('Successfully wrote File: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
+            return resp
         except Exception as e:
             self.logger.error('Error writing file: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
             raise
 
-    def delete_s3_file(self, filename):
+    def delete_s3_file(self, filename, prefix=None):
+        if prefix is None:
+            prefix = self.prefix
         try:
-            s3_key = '/'.join([self.prefix,filename])
-            self.client.delete_object(Bucket=self.bucket, Key=s3_key)
+            s3_key = '/'.join([prefix, filename])
+            resp = self.client.delete_object(Bucket=self.bucket, Key=s3_key)
             self.logger.info('Successfully Deleted File: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
+            return resp
         except Exception as e:
             self.logger.error('Error Deleting file: {} to S3 (Bucket: {})'.format(s3_key, self.bucket)) 
             raise
@@ -141,6 +150,16 @@ class FileManager():
             self.logger.error('Error writing metadata to S3 {}'.format(meta_filename), exc_info=True)
             return False
 
+        return True
+
+    def add_raw_file(self, file, file_name):
+        """ Add the raw user-uploaded file content to S3 """
+        try:
+            s3_resp = self.put_s3_file(file_name, file.read(), prefix=self.raw_prefix)
+            print s3_resp
+        except Exception as e:
+            self.logger.error('Error writing raw file to S3: %s', file_name, exc_info=True)
+            return False
         return True
 
     def unremove_source(self, file_name):

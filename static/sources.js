@@ -36,6 +36,9 @@ $(document).ready(function() {
                 $('#edit-title').val(data.title);
                 $('#edit-url').val(data.source_url);
                 $('#edit-description').val(data.description);
+                if (data.hasOwnProperty('upload_data')) {
+                    $('#edit-upload-data').val(data.upload_data);
+                }; 
             });
             $('#editSource').modal('show');
         } );

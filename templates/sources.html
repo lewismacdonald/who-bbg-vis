@@ -132,9 +132,7 @@
                     </div>
                     <div class="form-group">
                        <label class="control-label" for="file">Data File</label>
-                       <label class="form-control btn btn-info"> Browse
-                         <input id="fileupload" name="file" type="file" style="display:none" />
-                       </label>
+                       <input class="form-control btn btn-info" id="fileupload" name="file" type="file" />
                     </div>
                     <div class="form-group">
                       <button class="btn btn-primary " name="submit" type="submit">Submit</button>
@@ -182,6 +180,9 @@
                     <div class="form-group">
                       <label class="control-label" for="description">Description</label>
                       <textarea id="edit-description" class="form-control" rows="3" name="description" placeholder="A description of this dataset" /></textarea>
+                    </div>
+                    <div class="form-group">
+                      <input id="edit-upload-data" class="form-control"  name="upload_data" placeholder="User Uploaded data file" style="display:none"/>
                     </div>
                     <div class="form-group">
                       <button class="btn btn-primary" id="edit-submit" action="submit">Submit</button>

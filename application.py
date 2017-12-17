@@ -165,8 +165,9 @@ def get_source_meta(source_name):
         description = request.form['description']
         source_url = request.form['source_url']
         title =  request.form['title']
+        upload_data = request.form['upload_data']
 
-        resp = add_s3_metadata(name, source, source_url, title, description)
+        resp = add_s3_metadata(name, source, source_url, title, description, upload_data)
         if resp:
             flash('Source successfully Updated','bg-success')
         else:
@@ -196,16 +197,16 @@ def upload_file():
         # valid request
         resp = add_s3_source(request.files['file'], name, source, source_url, title, description)
 
-        if resp:
-            flash('Source added Successfully', 'bg-success')
+        if resp['status']=='OK':
+            flash('Source: "%s" added Successfully' % title, 'bg-success')
             return redirect(url_for('source_screen'))
         else:
-            flash('Failed Uploading: Invalid File'+str(e.__dict__))
-            return redirect(url_for('source_screen'), 'bg-danger')
+            flash('Failed Uploading: %s' % resp['status'], 'bg-danger')
+            return redirect(url_for('source_screen'))
     except Exception as e:
-        flash('Failed Uploading: Invalid File'+str(e.__dict__))
-        return redirect(url_for('source_screen'), 'bg-danger')
-
+        logging.exception('Failed uploading file to S3')
+        flash('Failed Uploading: Internal Error', 'bg-danger')
+        return redirect(url_for('source_screen'))
 
 
 
